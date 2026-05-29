@@ -1,9 +1,4 @@
-/**
- * Board support badges component
- *
- * Displays support status badges for boards (Platinum, Standard, Community, EOS, TV Box, WIP)
- * Consolidated from BoardModal and ArmbianBoardModal to eliminate duplication
- */
+// Support tier badges (Platinum, Standard, Community, EOS, TV Box, WIP)
 
 import { Crown, Shield, Users, Clock, Tv, Wrench } from 'lucide-react';
 import type { BoardInfo } from '../../types';

@@ -26,12 +26,7 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
-/**
- * Theme provider component
- *
- * Manages theme state and applies theme classes to the document element.
- * Persists theme preference via Tauri backend commands.
- */
+// Manages theme state, applies it to the document element, and persists it
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>('auto');
   const [isInitialized, setIsInitialized] = useState(false);
@@ -104,11 +99,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
-/**
- * Hook to access theme context
- *
- * @throws Error if used outside ThemeProvider
- */
+/** Access the theme context (throws if used outside ThemeProvider) */
 // eslint-disable-next-line react-refresh/only-export-components -- This is a hook, not a component
 export function useTheme(): ThemeContextType {
   const context = useContext(ThemeContext);

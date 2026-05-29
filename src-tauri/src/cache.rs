@@ -1,11 +1,8 @@
 //! Image cache management module
 //!
 //! Handles persistent caching of downloaded Armbian images with
-//! configurable size limits and LRU (Least Recently Used) eviction.
-//!
-//! Thread Safety:
-//! All cache operations are protected by a global Mutex to prevent
-//! race conditions when multiple threads access the cache simultaneously.
+//! configurable size limits and LRU eviction. All operations are
+//! guarded by a global Mutex.
 
 use std::fs;
 use std::path::PathBuf;
@@ -24,10 +21,7 @@ const MODULE: &str = "cache";
 /// Re-export default max cache size from config
 pub use crate::config::cache::DEFAULT_MAX_SIZE;
 
-/// Global mutex to ensure thread-safe cache operations
-///
-/// This prevents race conditions when multiple operations try to
-/// read/write cache files simultaneously (e.g., eviction during download).
+/// Serializes cache operations, e.g. eviction racing a download
 static CACHE_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
 /// Cache entry with metadata for LRU eviction
@@ -43,11 +37,7 @@ pub fn get_images_cache_dir() -> PathBuf {
     get_cache_dir(config::app::NAME).join("images")
 }
 
-/// Calculate total size of all cached images in bytes
-///
-/// Scans the images cache directory and sums up file sizes.
-/// Returns 0 if directory doesn't exist or on error.
-/// Thread-safe: acquires cache lock during operation.
+/// Total size of all cached images in bytes (0 if the directory is missing)
 pub fn calculate_cache_size() -> Result<u64, String> {
     let _lock = CACHE_LOCK
         .lock()
@@ -95,10 +85,8 @@ fn calculate_cache_size_internal() -> Result<u64, String> {
     Ok(total_size)
 }
 
-/// Get list of cached files sorted by modification time (oldest first)
-///
-/// Returns a vector of CacheEntry structs for LRU eviction.
-/// Note: This function does not acquire the cache lock - caller must ensure thread safety.
+/// Cached files sorted oldest-first for LRU eviction.
+/// Caller must hold the cache lock; this function does not.
 fn get_cached_files_by_age_internal() -> Result<Vec<CacheEntry>, String> {
     let cache_dir = get_images_cache_dir();
 
@@ -133,10 +121,7 @@ fn get_cached_files_by_age_internal() -> Result<Vec<CacheEntry>, String> {
     Ok(files)
 }
 
-/// Evict oldest files until cache is under the specified limit
-///
-/// Uses LRU (Least Recently Used) strategy based on file modification time.
-/// Thread-safe: acquires cache lock during operation.
+/// Evict oldest files (by mtime) until the cache is under the given limit
 pub fn evict_to_size(max_size: u64) -> Result<(), String> {
     let _lock = CACHE_LOCK
         .lock()
@@ -185,10 +170,7 @@ pub fn evict_to_size(max_size: u64) -> Result<(), String> {
     Ok(())
 }
 
-/// Clear all cached images
-///
-/// Removes all files from the images cache directory.
-/// Thread-safe: acquires cache lock during operation.
+/// Remove all files from the images cache directory
 pub fn clear_cache() -> Result<(), String> {
     let _lock = CACHE_LOCK
         .lock()
@@ -241,11 +223,7 @@ pub fn clear_cache() -> Result<(), String> {
     Ok(())
 }
 
-/// Check if a cached image exists and return its path
-///
-/// Looks for a file with the given filename in the cache directory.
-/// If found, updates the file's modification time to mark it as recently used.
-/// Thread-safe: acquires cache lock during operation.
+/// Return a cached image's path if present, bumping its mtime to mark it recently used
 pub fn get_cached_image(filename: &str) -> Option<PathBuf> {
     let _lock = match CACHE_LOCK.lock() {
         Ok(guard) => guard,
@@ -273,10 +251,7 @@ pub fn get_cached_image(filename: &str) -> Option<PathBuf> {
     }
 }
 
-/// Update file modification time to current time
-///
-/// Used for LRU tracking - accessed files get their mtime updated.
-/// Uses the filetime crate for reliable cross-platform mtime updates.
+/// Bump a file's mtime to now for LRU tracking (via the filetime crate)
 fn update_file_mtime(path: &PathBuf) -> Result<(), String> {
     let now = FileTime::now();
     filetime::set_file_mtime(path, now)
@@ -286,10 +261,7 @@ fn update_file_mtime(path: &PathBuf) -> Result<(), String> {
     Ok(())
 }
 
-/// Cached image metadata for frontend display
-///
-/// Contains file information and optional board association
-/// parsed from the Armbian filename convention.
+/// Cached image metadata for frontend display, with board parsed from the filename
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct CachedImageInfo {
     pub filename: String,
@@ -303,10 +275,7 @@ pub struct CachedImageInfo {
     pub board_name: Option<String>,
 }
 
-/// Convert a board slug to a human-readable name
-///
-/// Replaces hyphens with spaces and capitalizes words.
-/// Example: "nanopi-m5" → "Nanopi M5"
+/// Convert a board slug to a display name, e.g. "nanopi-m5" -> "Nanopi M5"
 fn slug_to_display_name(slug: &str) -> String {
     slug.split('-')
         .map(|word| {
@@ -320,11 +289,7 @@ fn slug_to_display_name(slug: &str) -> String {
         .join(" ")
 }
 
-/// List all cached images with metadata
-///
-/// Scans the cache directory and returns information about each cached file,
-/// including board association parsed from the filename.
-/// Thread-safe: acquires cache lock during operation.
+/// List cached images with metadata, including the board parsed from each filename
 pub fn list_cached_images() -> Result<Vec<CachedImageInfo>, String> {
     let _lock = CACHE_LOCK
         .lock()
@@ -403,12 +368,8 @@ pub fn list_cached_images() -> Result<Vec<CachedImageInfo>, String> {
     Ok(images)
 }
 
-/// Delete a single cached image by filename
-///
-/// Validates that the file is within the cache directory to prevent
-/// path traversal attacks, then removes it.
-/// Returns the new total cache size after deletion.
-/// Thread-safe: acquires cache lock during operation.
+/// Delete one cached image by filename (validates against path traversal),
+/// returning the new total cache size
 pub fn delete_cached_image(filename: &str) -> Result<u64, String> {
     let _lock = CACHE_LOCK
         .lock()

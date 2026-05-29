@@ -1,6 +1,4 @@
-/**
- * Reusable loading state component for modal dialogs
- */
+// Reusable loading state for modal dialogs
 
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';

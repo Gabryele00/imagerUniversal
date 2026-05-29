@@ -10,11 +10,7 @@ interface ChangelogModalProps {
   version: string;
 }
 
-/**
- * Modal component to display GitHub release changelog
- *
- * Shows release notes, published date, and link to full release on GitHub
- */
+// Modal displaying a GitHub release's notes and changelog
 export function ChangelogModal({ isOpen, onClose, version }: ChangelogModalProps) {
   const { t } = useTranslation();
   const [release, setRelease] = useState<GitHubRelease | null>(null);
@@ -42,23 +38,14 @@ export function ChangelogModal({ isOpen, onClose, version }: ChangelogModalProps
     fetchRelease();
   }, [isOpen, version]);
 
-  /**
-   * Extract unique contributor usernames from the release body
-   * GitHub releases typically format contributors as "by @username"
-   */
+  // Unique @username mentions from the release body, sorted
   const contributors = useMemo(() => {
     if (!release?.body) return [];
 
-    // Match all @username mentions
     const mentions = release.body.match(/@([a-zA-Z0-9_-]+)/g);
     if (!mentions) return [];
 
-    // Extract unique usernames, remove duplicates, and sort alphabetically
-    const uniqueUsernames = Array.from(
-      new Set(mentions.map(m => m.substring(1))) // Remove @ symbol
-    ).sort();
-
-    return uniqueUsernames;
+    return Array.from(new Set(mentions.map(m => m.substring(1)))).sort();
   }, [release?.body]);
 
   if (!isOpen) return null;
@@ -71,17 +58,7 @@ export function ChangelogModal({ isOpen, onClose, version }: ChangelogModalProps
     });
   };
 
-  /**
-   * Parse release body and convert markdown-style formatting to HTML
-   * Handles:
-   * - Headers (##, ###)
-   * - Lists (-, *)
-   * - Links [text](url)
-   * - Inline code
-   * - Bold text (**text**)
-   * - Italic text (*text*)
-   * - Line breaks and paragraphs
-   */
+  // Convert the release body's markdown (headers, lists, links, code, bold/italic) to HTML
   const parseReleaseBody = (body: string | null): string => {
     if (!body) return t('update.noChangelog', 'No changelog available');
 

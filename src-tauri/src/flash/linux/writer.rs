@@ -156,8 +156,7 @@ pub async fn flash_image(
 
     log_info!(MODULE, "Writing image...");
 
-    // Sync interval to show real progress (not just cache writes)
-    // This ensures the progress bar reflects actual disk writes, not just memory cache
+    // Sync periodically so progress reflects actual disk writes, not page cache
     let mut bytes_since_sync: u64 = 0;
 
     loop {
@@ -211,8 +210,7 @@ pub async fn flash_image(
         state.is_verifying.store(true, Ordering::SeqCst);
         state.verified_bytes.store(0, Ordering::SeqCst);
 
-        // Invalidate page cache before verification to ensure we read from disk
-        // This is critical - without this, we'd just be verifying cached data
+        // Drop page cache so verification reads from the device, not cached data
         unsafe {
             libc::posix_fadvise(device_fd, 0, image_size as i64, libc::POSIX_FADV_DONTNEED);
         }

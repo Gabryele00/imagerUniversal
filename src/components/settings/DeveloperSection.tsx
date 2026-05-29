@@ -6,11 +6,7 @@ import { useSettingsGroup } from '../../hooks/useSettingsGroup';
 import { LogsModal } from './LogsModal';
 import { EVENTS } from '../../config';
 
-/**
- * Developer settings section
- *
- * Contains developer mode toggle and view logs button.
- */
+// Developer mode toggle and log viewer
 export function DeveloperSection() {
   const { t } = useTranslation();
   const [developerMode, setDeveloperModeState] = useState<boolean>(false);
@@ -18,7 +14,6 @@ export function DeveloperSection() {
   const [isToggling, setIsToggling] = useState<boolean>(false);
   const [initialized, setInitialized] = useState(false);
 
-  // Load preferences on mount
   const settingsGroup = useSettingsGroup<{
     developerMode: boolean;
   }>({

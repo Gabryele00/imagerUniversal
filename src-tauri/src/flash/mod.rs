@@ -19,10 +19,9 @@ use std::process::Command;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use tokio::sync::Mutex;
 
-/// QDL-specific progress state
+/// QDL (Qualcomm EDL) progress state
 ///
-/// Grouped separately from block-device flash fields for clarity.
-/// Uses `std::sync::Mutex` (not tokio) because `qdl_flash` runs in `spawn_blocking`.
+/// Uses `std::sync::Mutex` because `qdl_flash` runs in `spawn_blocking`.
 pub struct QdlProgress {
     /// Whether the current operation is a QDL (Qualcomm EDL) flash
     pub is_active: AtomicBool,
@@ -104,10 +103,8 @@ pub use linux::request_authorization;
 #[cfg(target_os = "macos")]
 pub use macos::request_authorization;
 
-/// Request authorization before flashing (platform-specific)
-/// On macOS: Shows Touch ID / password dialog
-/// On Linux: If not root, launches pkexec and restarts the app elevated
-/// On Windows: No-op (authorization happens during flash)
+/// Request authorization before flashing: Touch ID on macOS, pkexec re-launch
+/// on Linux when not root, no-op on Windows.
 #[cfg(target_os = "windows")]
 pub fn request_authorization(_device_path: &str) -> Result<bool, String> {
     Ok(true)

@@ -21,13 +21,10 @@ pub async fn get_qdl_devices() -> Result<Vec<QdlDevice>, String> {
     qdl::detect::get_qdl_devices()
 }
 
-/// Flash a QDL image (TAR archive) to a device in EDL mode
+/// Flash a QDL image (TAR archive) to a device in EDL mode.
 ///
-/// Pipeline: Extract TAR → Connect USB → Sahara → Firehose → Reset
-///
-/// # Arguments
-/// * `tar_path` - Path to the downloaded TAR archive containing flash files
-/// * `serial` - Optional USB serial number to target a specific device
+/// Pipeline: Extract TAR -> Connect USB -> Sahara -> Firehose -> Reset.
+/// `serial` optionally targets a specific device.
 #[tauri::command]
 pub async fn flash_qdl_image(
     tar_path: String,

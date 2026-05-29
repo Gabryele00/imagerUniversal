@@ -132,7 +132,6 @@ export function UpdateModal() {
     }
   };
 
-  /** Format file size in human-readable format with decimal precision for small values */
   const formatBytes = (bytes: number): string => formatFileSize(bytes, '0 B', true);
 
   const getProgressPercentage = (): number => {

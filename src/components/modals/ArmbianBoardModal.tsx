@@ -1,10 +1,4 @@
-/**
- * Armbian Board Detection Modal
- *
- * Shows when the app detects it's running on an Armbian system.
- * Allows the user to confirm auto-selection of the detected board
- * or cancel and proceed with manual selection.
- */
+// Modal shown on an Armbian host to confirm auto-selecting the detected board
 
 import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';

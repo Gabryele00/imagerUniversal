@@ -20,10 +20,8 @@ use once_cell::sync::Lazy;
 use reqwest::header::{HeaderMap, HeaderValue};
 use std::path::PathBuf;
 
-/// Shared HTTP client for JSON API endpoints (short timeout, X-Armbian-Client header)
-///
-/// Uses SHORT_TIMEOUT_SECS (10s) since metadata responses are small. For large
-/// downloads (images) use a dedicated client with longer timeouts.
+/// Shared HTTP client for JSON API endpoints (10s timeout, X-Armbian-Client header).
+/// Large image downloads use a separate client with longer timeouts.
 static API_CLIENT: Lazy<reqwest::Client> = Lazy::new(|| {
     let mut headers = HeaderMap::new();
     headers.insert(
@@ -55,10 +53,8 @@ fn get_cache_path(name: &str) -> PathBuf {
         .join(format!("{}.json", name))
 }
 
-/// Save data to a cache file atomically (temp file + rename).
-///
-/// Uses `tokio::task::spawn_blocking` for consistency with the async runtime,
-/// and a unique tmp suffix to avoid collisions between concurrent writers.
+/// Save data to a cache file atomically (temp file + rename), with a unique
+/// tmp suffix so concurrent writers don't collide.
 fn save_cache(name: &str, data: &str) {
     let path = get_cache_path(name);
     let data = data.to_string();
@@ -66,8 +62,7 @@ fn save_cache(name: &str, data: &str) {
         if let Some(parent) = path.parent() {
             let _ = std::fs::create_dir_all(parent);
         }
-        // Unique tmp filename per writer (nanosecond timestamp + pid) to avoid
-        // races if two tasks save the same cache file concurrently.
+        // Unique tmp name (timestamp + pid) avoids races between concurrent writers
         let pid = std::process::id();
         let nanos = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -128,11 +123,8 @@ pub fn cleanup_legacy_cache() {
     }
 }
 
-/// Fetch all boards from the Armbian REST API with pagination support.
-///
-/// Requests up to 500 boards per page and fetches additional pages if needed.
-/// On success, saves the response to disk for offline use.
-/// On failure, falls back to the local disk cache.
+/// Fetch all boards from the Armbian REST API (paginated), caching to disk
+/// on success and falling back to that cache on failure.
 pub async fn fetch_boards() -> Result<Vec<ApiBoardSummary>, String> {
     log_debug!(
         "images",
@@ -159,12 +151,8 @@ pub async fn fetch_boards() -> Result<Vec<ApiBoardSummary>, String> {
     }
 }
 
-/// Fetch boards directly from the remote API, handling pagination.
-///
-/// Safety guards:
-/// - Breaks early if the API returns an empty page (prevents infinite loops
-///   when `meta.total` is inconsistent with actual data length).
-/// - Enforces a hard `MAX_PAGES` cap as a final safety net.
+/// Fetch boards directly from the remote API, paginating until an empty page
+/// or the `MAX_PAGES` cap (both guard against bad `meta.total` looping forever).
 async fn fetch_boards_from_api() -> Result<Vec<ApiBoardSummary>, String> {
     let url_base = format!("{}/boards", config::urls::API_BASE);
     let mut all_boards = Vec::new();
@@ -236,11 +224,8 @@ async fn fetch_boards_from_api() -> Result<Vec<ApiBoardSummary>, String> {
     Ok(all_boards)
 }
 
-/// Fetch images for a specific board from the Armbian REST API.
-///
-/// Supports optional query parameter filters passed directly to the API.
-/// On success, saves the response to disk for offline use.
-/// On failure, falls back to the local disk cache.
+/// Fetch a board's images from the Armbian REST API (optional query filters),
+/// caching to disk on success and falling back to that cache on failure.
 pub async fn fetch_images_for_board(
     slug: &str,
     variant: Option<&str>,
@@ -321,10 +306,8 @@ async fn fetch_images_from_api(
     Ok(response.data)
 }
 
-/// Fetch all vendors from the Armbian REST API.
-///
-/// On success, saves the response to disk for offline use.
-/// On failure, falls back to the local disk cache.
+/// Fetch all vendors from the Armbian REST API, caching to disk on success
+/// and falling back to that cache on failure.
 pub async fn fetch_vendors() -> Result<Vec<ApiVendor>, String> {
     log_debug!(
         "images",

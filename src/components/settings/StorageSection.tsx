@@ -15,16 +15,11 @@ import { useSettingsGroup } from '../../hooks/useSettingsGroup';
 import { CACHE, EVENTS } from '../../config';
 import { formatBytes } from '../../utils';
 
-/**
- * Storage settings section for cache management
- *
- * Contains cache enable toggle, max size dropdown, clear cache, and manage cached images.
- */
+// Cache management settings section
 export function StorageSection() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToasts();
 
-  // Load cache-related settings on mount
   const settingsGroup = useSettingsGroup<{
     cacheEnabled: boolean;
     cacheMaxSize: number;
@@ -33,12 +28,11 @@ export function StorageSection() {
     cacheMaxSize: getCacheMaxSize,
   });
 
-  // Local state for mutable values
   const [cacheEnabled, setCacheEnabledState] = useState<boolean>(true);
   const [cacheMaxSize, setCacheMaxSizeState] = useState<number>(CACHE.DEFAULT_SIZE);
   const [initialized, setInitialized] = useState(false);
 
-  // Sync with loaded values once
+  // Initialize local state once settings load
   useEffect(() => {
     if (Object.keys(settingsGroup).length === 0) return;
     if (settingsGroup.cacheEnabled !== undefined) setCacheEnabledState(settingsGroup.cacheEnabled);
@@ -46,7 +40,6 @@ export function StorageSection() {
     setInitialized(true);
   }, [settingsGroup]);
 
-  // Local state for non-persistent values
   const [currentCacheSize, setCurrentCacheSize] = useState<number>(0);
   const [isClearing, setIsClearing] = useState<boolean>(false);
   const [isLoadingCacheSize, setIsLoadingCacheSize] = useState<boolean>(true);
@@ -66,7 +59,6 @@ export function StorageSection() {
     }
   }, []);
 
-  // Load cache size on mount
   useEffect(() => {
     loadCacheSize();
   }, [loadCacheSize]);

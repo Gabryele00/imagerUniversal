@@ -42,22 +42,19 @@ export function ManufacturerModal({ isOpen, onClose, onSelect }: ManufacturerMod
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
 
-  // Use hook for async data fetching
   const { data: boards, loading, error, reload } = useAsyncDataWhen<BoardInfo[]>(
     isOpen,
     () => getBoards(),
     [isOpen]
   );
 
-  // Use shared hook for manufacturer list with logo validation
   const { manufacturers, isLoaded: logosLoaded } = useManufacturerList(boards, isOpen, search);
 
-  // Derive ready state
+  // Ready only when manufacturers exist and their logos have been validated
   const manufacturersReady = useMemo(() => {
     return !!(manufacturers && manufacturers.length > 0 && logosLoaded);
   }, [manufacturers, logosLoaded]);
 
-  // Show skeleton with minimum delay
   const { showSkeleton } = useSkeletonLoading(loading, manufacturersReady);
 
   const searchBarContent = (

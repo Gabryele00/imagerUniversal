@@ -1,9 +1,4 @@
-/**
- * Global toast notification system using React Context
- *
- * Provides a single toast container shared across the entire application.
- * Components use `useToasts()` to access `showSuccess` and `showError` functions.
- */
+// Global toast system via React Context: one shared container, accessed through useToasts()
 
 import { createContext, useContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
@@ -22,11 +17,7 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
-/**
- * Toast provider component that manages and renders all toast notifications
- *
- * Wrap the app content in this provider so all children can use `useToasts()`.
- */
+// Provider that manages and renders all toasts; wrap the app so children can use useToasts()
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
@@ -61,13 +52,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * Hook to access global toast notification functions
- *
- * Must be used within a `<ToastProvider>`.
- *
- * @returns Object with `showSuccess` and `showError` functions
- */
+/** Access the toast functions (showSuccess/showError); must be inside a ToastProvider */
 // eslint-disable-next-line react-refresh/only-export-components
 export function useToasts(): ToastContextValue {
   const context = useContext(ToastContext);

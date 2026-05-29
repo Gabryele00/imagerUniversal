@@ -1,6 +1,4 @@
-/**
- * Reusable search input component for modal dialogs
- */
+// Reusable search input for modal dialogs
 
 import { Search } from 'lucide-react';
 import { UI } from '../../config';

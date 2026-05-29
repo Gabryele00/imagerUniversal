@@ -198,14 +198,9 @@ fn extract_ascii_string(buffer: &[u8], offset: usize) -> String {
     }
 }
 
-/// Checks if a disk is write-protected using IOCTL_STORAGE_GET_MEDIA_TYPES_EX
+/// Check the MEDIA_WRITE_PROTECTED flag via IOCTL_STORAGE_GET_MEDIA_TYPES_EX.
 ///
-/// This method checks the MEDIA_WRITE_PROTECTED flag in MediaCharacteristics,
-/// which reliably detects the physical write protection lock switch on SD cards.
-///
-/// Note: IOCTL_DISK_IS_WRITABLE only checks driver capability, not physical lock state.
-///
-/// Returns true if the disk is write-protected (lock switch engaged)
+/// Detects an SD card's physical lock switch, which IOCTL_DISK_IS_WRITABLE misses.
 #[cfg(target_os = "windows")]
 fn is_disk_read_only(handle: HANDLE) -> bool {
     // Buffer size for GET_MEDIA_TYPES response (header + array of DEVICE_MEDIA_INFO)

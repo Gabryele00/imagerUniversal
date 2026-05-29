@@ -6,13 +6,8 @@
 use crate::config;
 use crate::picture_cache;
 
-/// Get a board image from local cache as a data URI, downloading if needed
-///
-/// Returns a `data:image/png;base64,...` string ready for `<img src>`,
-/// or `None` if the image is unavailable (offline and not cached).
-///
-/// # Arguments
-/// * `board_slug` - Board identifier used to construct the image URL
+/// Get a board image from cache as a `data:image/png;base64,...` URI, downloading
+/// if needed. Returns `None` when unavailable (offline and not cached).
 #[tauri::command]
 pub async fn get_cached_board_image(board_slug: String) -> Result<Option<String>, String> {
     let url = format!(
@@ -29,13 +24,8 @@ pub async fn get_cached_board_image(board_slug: String) -> Result<Option<String>
     }
 }
 
-/// Get a vendor logo from local cache as a data URI, downloading if needed
-///
-/// Returns a `data:image/png;base64,...` string ready for `<img src>`,
-/// or `None` if the logo is unavailable (offline and not cached).
-///
-/// # Arguments
-/// * `vendor_slug` - Vendor identifier used to construct the logo URL
+/// Get a vendor logo from cache as a `data:image/png;base64,...` URI, downloading
+/// if needed. Returns `None` when unavailable (offline and not cached).
 #[tauri::command]
 pub async fn get_cached_vendor_logo(vendor_slug: String) -> Result<Option<String>, String> {
     let url = format!("{}{}.png", config::urls::VENDOR_IMAGES_BASE, vendor_slug);

@@ -29,7 +29,6 @@ export function FlashProgress({
   const [boardImageUrl, setBoardImageUrl] = useState<string | null>(null);
   const [imageLoadError, setImageLoadError] = useState(false);
 
-  // All flash operation logic is encapsulated in this hook
   const {
     stage,
     progress,
@@ -42,11 +41,10 @@ export function FlashProgress({
     handleShaWarningCancel,
   } = useFlashOperation({ image, device, onBack });
 
-  // Load board image from local cache (base64 data URI)
   useEffect(() => {
     getCachedBoardImage(board.slug)
       .then(setBoardImageUrl)
-      .catch(() => { /* Ignore — fallback image will be used */ });
+      .catch(() => { /* fall back to placeholder image */ });
   }, [board.slug]);
 
   function getImageDisplayText(): string {
@@ -56,7 +54,7 @@ export function FlashProgress({
     return `Armbian ${image.release} ${image.distro_release}`;
   }
 
-  /** Stages that show an indeterminate (animated) progress bar instead of a percentage */
+  // Stages with an animated bar rather than a percentage
   const INDETERMINATE_STAGES: FlashStage[] = ['decompressing', 'verifying_sha', 'extracting', 'qdl_sahara'];
   const isIndeterminate = INDETERMINATE_STAGES.includes(stage);
 

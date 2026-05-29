@@ -16,16 +16,11 @@ import { useToasts } from '../../hooks/useToasts';
 import { useSettingsGroup } from '../../hooks/useSettingsGroup';
 import { EVENTS } from '../../config';
 
-/**
- * Preferences settings section
- *
- * Contains notification preferences, verification settings, and Armbian board detection.
- */
+// Notification, verification, and board detection preferences
 export function PreferencesSection() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToasts();
 
-  // Load all persistent settings and Armbian detection on mount
   const settingsGroup = useSettingsGroup<{
     showMotd: boolean;
     showUpdaterModal: boolean;
@@ -45,10 +40,9 @@ export function PreferencesSection() {
     },
   });
 
-  // Track whether initial load is complete to avoid switch animation on mount
+  // Gates rendering until loaded to prevent toggle animation on mount
   const loaded = Object.keys(settingsGroup).length > 0;
 
-  // Local state for mutable values — initialized from loaded settings
   const [showMotd, setShowMotdState] = useState<boolean>(true);
   const [showUpdaterModal, setShowUpdaterModalState] = useState<boolean>(true);
   const [skipVerify, setSkipVerifyState] = useState<boolean>(false);
@@ -56,7 +50,7 @@ export function PreferencesSection() {
   const [isToggling, setIsToggling] = useState<boolean>(false);
   const [initialized, setInitialized] = useState(false);
 
-  // Sync with loaded values once, then mark initialized
+  // Initialize local state once settings load
   useEffect(() => {
     if (!loaded) return;
     if (settingsGroup.showMotd !== undefined) setShowMotdState(settingsGroup.showMotd);

@@ -21,7 +21,7 @@ function App() {
   );
 }
 
-/** Main application content — must be inside ToastProvider to use useToasts() */
+/** Main application content, must be inside ToastProvider to use useToasts() */
 function AppContent() {
   const { t } = useTranslation();
   const [isFlashing, setIsFlashing] = useState(false);
@@ -60,7 +60,7 @@ function AppContent() {
       showSuccess(t('home.connectionRestored'));
     }
 
-    // Reset non-local selections when going offline — API images can't be downloaded
+    // Reset non-local selections when going offline, API images can't be downloaded
     if (prevOnlineRef.current === true && !isOnline && selectedImage && !selectedImage.is_custom) {
       resetSelectionsFrom('manufacturer');
     }
@@ -69,13 +69,9 @@ function AppContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline, showSuccess, t]);
 
-  /**
-   * Auto-select board based on Armbian detection
-   * Sets manufacturer and board without user interaction
-   */
+  // Auto-select manufacturer and board from a detected Armbian board
   const autoSelectBoard = useCallback(async (board: BoardInfo) => {
     try {
-      // Create manufacturer from board vendor
       const manufacturer: Manufacturer = {
         id: board.vendor || 'other',
         name: board.vendor_name || 'Other',
@@ -86,7 +82,7 @@ function AppContent() {
       setSelectedManufacturer(manufacturer);
       setSelectedBoard(board);
 
-      // Reset image and device selections (user still needs to select these)
+      // Image and device are still chosen by the user
       setSelectedImage(null);
       setSelectedDevice(null);
 
@@ -96,14 +92,11 @@ function AppContent() {
     }
   }, []);
 
-  /**
-   * Check for Armbian system on app startup
-   * Detects if running on Armbian and either shows modal or auto-selects based on settings
-   */
+  // On startup, detect an Armbian host and either show the modal or auto-select
   useEffect(() => {
     const checkArmbianSystem = async () => {
       try {
-        // Prevent re-execution (except when coming back online after being offline)
+        // Re-run only when coming back online after being offline
         if (armbianCheckRef.current) return;
 
         // Armbian detection is Linux-only
@@ -115,7 +108,7 @@ function AppContent() {
           return;
         }
 
-        // Skip if offline — board matching requires API data
+        // Skip if offline, board matching requires API data
         if (!isOnline) {
           logInfo('app', 'Skipping Armbian board detection: offline');
           // Don't set ref - allow retry when online
@@ -182,10 +175,7 @@ function AppContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  /**
-   * Handle cached image reuse from Cache Manager
-   * Creates a custom ImageInfo and selects the board + image for flashing
-   */
+  // Reuse a cached image from the Cache Manager: select its board and image
   useEffect(() => {
     const handler = async (e: Event) => {
       const { path, filename, size, boardSlug, boardName } = (e as CustomEvent).detail;
@@ -242,7 +232,7 @@ function AppContent() {
 
       // Use API-matched board, or build a fallback from cache metadata.
       // When offline, the API match fails but the cache manager still provides
-      // boardSlug/boardName parsed from the filename — use those for display.
+      // boardSlug/boardName parsed from the filename, use those for display.
       const hasCacheMetadata = boardSlug && boardSlug !== 'cached';
       const displayBoard = matchedBoard || {
         slug: boardSlug || 'cached',
@@ -269,10 +259,7 @@ function AppContent() {
     return () => window.removeEventListener(EVENTS.CACHE_IMAGE_REUSE, handler);
   }, [t]);
 
-  /**
-   * Reset selections from a given step onwards.
-   * When user changes a selection, downstream selections become invalid.
-   */
+  // Reset a step and all downstream selections, which become invalid when it changes
   function resetSelectionsFrom(step: SelectionStep) {
     const steps: SelectionStep[] = ['manufacturer', 'board', 'image', 'device'];
     const stepIndex = steps.indexOf(step);
@@ -407,10 +394,7 @@ function AppContent() {
     setActiveModal(step);
   }
 
-  /**
-   * Handle Armbian modal confirm - auto-select the detected board
-   * Uses cached board to avoid redundant API fetch
-   */
+  // Confirm the Armbian modal: auto-select the detected board (from cache, no refetch)
   const handleArmbianConfirm = useCallback(async () => {
     if (!detectedBoard) {
       logWarn('app', 'No detected board available for auto-selection');

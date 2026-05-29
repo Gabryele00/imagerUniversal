@@ -1,12 +1,4 @@
-/**
- * Modal exit animation hook
- *
- * Provides consistent exit animation behavior for modals with:
- * - Double-trigger prevention via ref tracking
- * - Configurable animation duration (default 200ms)
- * - Optional pre-close callback (for cleanup, settings updates, etc.)
- * - Post-close callback support
- */
+// Consistent modal exit animation with double-trigger guard and pre/post-close callbacks
 
 import { useState, useCallback, useRef } from 'react';
 

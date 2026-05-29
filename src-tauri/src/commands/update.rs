@@ -10,14 +10,7 @@ pub struct GitHubRelease {
     pub published_at: String,
 }
 
-/// Fetches release information from GitHub API for a specific version tag
-///
-/// # Arguments
-/// * `version` - Version number (with or without 'v' prefix, e.g., "1.0.0" or "v1.0.0")
-///
-/// # Returns
-/// * `Ok(GitHubRelease)` - Release metadata including notes, published date, and HTML URL
-/// * `Err(String)` - Error message if version is empty or API call fails
+/// Fetch GitHub release metadata for a version tag (with or without a 'v' prefix)
 #[command]
 pub async fn get_github_release(version: String) -> Result<GitHubRelease, String> {
     // Validate and trim version parameter
@@ -62,14 +55,9 @@ pub async fn get_github_release(version: String) -> Result<GitHubRelease, String
     Ok(release)
 }
 
-/// Checks if the application is running from the /Applications directory (macOS only)
+/// Whether the app runs from /Applications (always true off macOS).
 ///
-/// On macOS, auto-updates may fail if the app is not in /Applications.
-/// This command allows the frontend to show a specific error message when that happens.
-///
-/// # Returns
-/// * `Ok(true)` - App is in /Applications (or running on non-macOS)
-/// * `Ok(false)` - App is NOT in /Applications (macOS only)
+/// macOS auto-updates fail outside /Applications; the frontend uses this to warn.
 #[command]
 pub async fn is_app_in_applications() -> Result<bool, String> {
     #[cfg(target_os = "macos")]

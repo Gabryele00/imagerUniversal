@@ -1,24 +1,11 @@
-/**
- * Settings management hook using Tauri Store plugin
- *
- * Provides direct access to persistent settings without backend commands.
- * All operations are wrapped in proper error handling to prevent silent failures.
- */
+// Persistent settings access via the Tauri Store plugin (no backend commands)
 
 import { load } from '@tauri-apps/plugin-store';
 import { CACHE, SETTINGS } from '../config';
 let storeInstance: Awaited<ReturnType<typeof load>> | null = null;
 let storePromise: Promise<Awaited<ReturnType<typeof load>>> | null = null;
 
-/**
- * Initialize the settings store (lazy loading with concurrent access protection)
- *
- * This function prevents race conditions when multiple components
- * try to access the store simultaneously by caching the initialization promise.
- *
- * @returns Promise resolving to the store instance
- * @throws Error if store initialization fails
- */
+// Lazily load the store, caching the in-flight promise to avoid concurrent re-init
 async function getStore() {
   if (storeInstance) {
     return storeInstance;
@@ -40,12 +27,7 @@ async function getStore() {
   return storePromise;
 }
 
-/**
- * Get the current theme preference
- *
- * @returns Promise resolving to theme value ('auto', 'light', or 'dark')
- * @throws Error if store access fails
- */
+/** Get the theme preference ('auto', 'light', or 'dark') */
 export async function getTheme(): Promise<string> {
   try {
     const store = await getStore();
@@ -55,28 +37,18 @@ export async function getTheme(): Promise<string> {
   }
 }
 
-/**
- * Set the theme preference
- *
- * @param theme - Theme value ('auto', 'light', or 'dark')
- * @throws Error if store access or save fails
- */
+/** Set the theme preference ('auto', 'light', or 'dark') */
 export async function setTheme(theme: string): Promise<void> {
   try {
     const store = await getStore();
     await store.set(SETTINGS.KEYS.THEME, theme);
-    await store.save(); // Explicitly save to ensure persistence
+    await store.save();
   } catch (error) {
     throw new Error(`Failed to set theme: ${error}`);
   }
 }
 
-/**
- * Get the current language preference
- *
- * @returns Promise resolving to language code (e.g., 'en', 'de', 'fr')
- * @throws Error if store access fails
- */
+/** Get the language preference (e.g. 'en', 'de', 'fr') */
 export async function getLanguage(): Promise<string> {
   try {
     const store = await getStore();
@@ -86,28 +58,18 @@ export async function getLanguage(): Promise<string> {
   }
 }
 
-/**
- * Set the language preference
- *
- * @param language - Language code (e.g., 'en', 'de', 'fr')
- * @throws Error if store access or save fails
- */
+/** Set the language preference (e.g. 'en', 'de', 'fr') */
 export async function setLanguage(language: string): Promise<void> {
   try {
     const store = await getStore();
     await store.set(SETTINGS.KEYS.LANGUAGE, language);
-    await store.save(); // Explicitly save to ensure persistence
+    await store.save();
   } catch (error) {
     throw new Error(`Failed to set language: ${error}`);
   }
 }
 
-/**
- * Get the MOTD visibility preference
- *
- * @returns Promise resolving to true if MOTD should be shown, false otherwise
- * @throws Error if store access fails
- */
+/** Get the MOTD visibility preference */
 export async function getShowMotd(): Promise<boolean> {
   try {
     const store = await getStore();
@@ -118,28 +80,18 @@ export async function getShowMotd(): Promise<boolean> {
   }
 }
 
-/**
- * Set the MOTD visibility preference
- *
- * @param show - true to show MOTD, false to hide
- * @throws Error if store access or save fails
- */
+/** Set the MOTD visibility preference */
 export async function setShowMotd(show: boolean): Promise<void> {
   try {
     const store = await getStore();
     await store.set(SETTINGS.KEYS.SHOW_MOTD, show);
-    await store.save(); // Explicitly save to ensure persistence
+    await store.save();
   } catch (error) {
     throw new Error(`Failed to set MOTD preference: ${error}`);
   }
 }
 
-/**
- * Get the updater modal visibility preference
- *
- * @returns Promise resolving to true if updater modal should be shown, false otherwise
- * @throws Error if store access fails
- */
+/** Get the updater modal visibility preference */
 export async function getShowUpdaterModal(): Promise<boolean> {
   try {
     const store = await getStore();
@@ -150,28 +102,18 @@ export async function getShowUpdaterModal(): Promise<boolean> {
   }
 }
 
-/**
- * Set the updater modal visibility preference
- *
- * @param show - true to show updater modal, false to hide
- * @throws Error if store access or save fails
- */
+/** Set the updater modal visibility preference */
 export async function setShowUpdaterModal(show: boolean): Promise<void> {
   try {
     const store = await getStore();
     await store.set(SETTINGS.KEYS.SHOW_UPDATER_MODAL, show);
-    await store.save(); // Explicitly save to ensure persistence
+    await store.save();
   } catch (error) {
     throw new Error(`Failed to set updater modal preference: ${error}`);
   }
 }
 
-/**
- * Get the developer mode preference
- *
- * @returns Promise resolving to true if developer mode is enabled, false otherwise
- * @throws Error if store access fails
- */
+/** Get the developer mode preference */
 export async function getDeveloperMode(): Promise<boolean> {
   try {
     const store = await getStore();
@@ -182,31 +124,18 @@ export async function getDeveloperMode(): Promise<boolean> {
   }
 }
 
-/**
- * Set the developer mode preference
- *
- * This setting controls debug logging verbosity across the application.
- * When enabled, more detailed debug information is logged.
- *
- * @param enabled - true to enable developer mode, false to disable
- * @throws Error if store access or save fails
- */
+/** Set developer mode, which controls debug logging verbosity */
 export async function setDeveloperMode(enabled: boolean): Promise<void> {
   try {
     const store = await getStore();
     await store.set(SETTINGS.KEYS.DEVELOPER_MODE, enabled);
-    await store.save(); // Explicitly save to ensure persistence
+    await store.save();
   } catch (error) {
     throw new Error(`Failed to set developer mode preference: ${error}`);
   }
 }
 
-/**
- * Get the skip verification preference
- *
- * @returns Promise resolving to true if verification should be skipped, false otherwise
- * @throws Error if store access fails
- */
+/** Get the skip-verification preference */
 export async function getSkipVerify(): Promise<boolean> {
   try {
     const store = await getStore();
@@ -217,14 +146,7 @@ export async function getSkipVerify(): Promise<boolean> {
   }
 }
 
-/**
- * Set the skip verification preference
- *
- * When enabled, the post-flash verification step is skipped for faster flashing.
- *
- * @param skip - true to skip verification, false to verify after flashing
- * @throws Error if store access or save fails
- */
+/** Set the skip-verification preference (skips the post-flash check for speed) */
 export async function setSkipVerify(skip: boolean): Promise<void> {
   try {
     const store = await getStore();
@@ -239,16 +161,10 @@ export async function setSkipVerify(skip: boolean): Promise<void> {
 // Cache Settings
 // ============================================================================
 
-// Note: The canonical default cache size is defined in the Rust backend
-// (src-tauri/src/config/mod.rs). This fallback is only used if the
-// backend value cannot be retrieved. The backend is the source of truth.
+// The Rust backend owns the canonical cache-size default; values here are
+// only fallbacks for when the backend cannot be reached.
 
-/**
- * Get the cache enabled preference
- *
- * @returns Promise resolving to true if image caching is enabled, false otherwise
- * @throws Error if store access fails
- */
+/** Get the cache enabled preference */
 export async function getCacheEnabled(): Promise<boolean> {
   try {
     const store = await getStore();
@@ -260,13 +176,8 @@ export async function getCacheEnabled(): Promise<boolean> {
 }
 
 /**
- * Set the cache enabled preference
- *
- * When enabled, downloaded images are kept for faster retry if flashing fails.
- * When disabled, images are deleted after successful flash.
- *
- * @param enabled - true to enable image caching, false to disable
- * @throws Error if store access or save fails
+ * Set the cache enabled preference.
+ * When enabled, downloaded images are kept for faster retry instead of deleted after flash.
  */
 export async function setCacheEnabled(enabled: boolean): Promise<void> {
   try {
@@ -279,34 +190,19 @@ export async function setCacheEnabled(enabled: boolean): Promise<void> {
 }
 
 /**
- * Get the maximum cache size in bytes
- *
- * If no value is stored, returns null to indicate the backend default should be used.
- * The caller should handle null by using the backend's default value.
- *
- * @returns Promise resolving to maximum cache size in bytes, or null if not set
- * @throws Error if store access fails
+ * Get the maximum cache size in bytes, falling back to the backend default when unset.
  */
 export async function getCacheMaxSize(): Promise<number> {
   try {
     const store = await getStore();
     const value = await store.get<number>(SETTINGS.KEYS.CACHE_MAX_SIZE);
-    // Return a reasonable fallback if not set - matches backend default
-    // This is only a fallback; the backend is the source of truth
     return value ?? CACHE.DEFAULT_SIZE;
   } catch (error) {
     throw new Error(`Failed to get cache max size: ${error}`);
   }
 }
 
-/**
- * Set the maximum cache size in bytes
- *
- * When the cache exceeds this size, oldest images are automatically removed.
- *
- * @param size - Maximum cache size in bytes
- * @throws Error if store access or save fails
- */
+/** Set the max cache size in bytes; older images are evicted past this limit */
 export async function setCacheMaxSize(size: number): Promise<void> {
   try {
     const store = await getStore();
@@ -322,15 +218,8 @@ export async function setCacheMaxSize(size: number): Promise<void> {
 // ============================================================================
 
 /**
- * Get the Armbian board detection mode
- *
- * Controls how the app behaves when running on an Armbian system:
- * - "disabled": Don't detect or auto-select
- * - "modal": Show confirmation modal before auto-selecting
- * - "auto": Automatically select without confirmation
- *
- * @returns Promise resolving to detection mode string
- * @throws Error if store access fails
+ * Get the Armbian board detection mode: "disabled" (off),
+ * "modal" (confirm before auto-select), or "auto" (no confirmation).
  */
 export async function getArmbianBoardDetection(): Promise<string> {
   try {
@@ -344,17 +233,7 @@ export async function getArmbianBoardDetection(): Promise<string> {
   }
 }
 
-/**
- * Set the Armbian board detection mode
- *
- * Controls how the app behaves when running on an Armbian system:
- * - "disabled": Don't detect or auto-select
- * - "modal": Show confirmation modal before auto-selecting
- * - "auto": Automatically select without confirmation
- *
- * @param mode - Detection mode ('disabled', 'modal', or 'auto')
- * @throws Error if store access fails or mode is invalid
- */
+/** Set the Armbian board detection mode ('disabled', 'modal', or 'auto') */
 export async function setArmbianBoardDetection(mode: string): Promise<void> {
   if (!['disabled', 'modal', 'auto'].includes(mode)) {
     throw new Error(

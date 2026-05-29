@@ -87,32 +87,9 @@ function useAsyncDataCore<T>(
 }
 
 /**
- * Hook for managing async data fetching with loading and error states.
- *
- * Eliminates boilerplate code for:
- * - Loading state management
- * - Error handling
- * - Data state management
- * - Reload functionality
- *
- * @param fetcher - Async function that returns the data
- * @param deps - Dependencies that trigger a refetch when changed
- * @param options - Additional options
- *
- * @example
- * ```tsx
- * // Basic usage
- * const { data, loading, error, reload } = useAsyncData(
- *   () => getBoards(),
- *   [isOpen]
- * );
- *
- * // With conditional fetching
- * const { data, loading, error } = useAsyncData(
- *   () => board ? getImagesForBoard(board.slug) : Promise.resolve([]),
- *   [board?.slug]
- * );
- * ```
+ * Async data fetching with loading/error state and reload.
+ * @param fetcher - returns the data
+ * @param deps - refetch when these change
  */
 export function useAsyncData<T>(
   fetcher: () => Promise<T>,
@@ -126,7 +103,6 @@ export function useAsyncData<T>(
     initialLoading: immediate
   });
 
-  // Fetch on mount and when dependencies change
   useEffect(() => {
     if (immediate) {
       reload();
@@ -138,21 +114,7 @@ export function useAsyncData<T>(
 }
 
 /**
- * Hook for conditional async data fetching.
- * Only fetches when the condition is true.
- *
- * @param condition - Whether to fetch data
- * @param fetcher - Async function that returns the data
- * @param deps - Additional dependencies
- *
- * @example
- * ```tsx
- * const { data, loading, error, reload } = useAsyncDataWhen(
- *   isOpen && boards.length === 0,
- *   () => getBoards(),
- *   [isOpen]
- * );
- * ```
+ * Conditional async data fetching, only runs when `condition` is true.
  */
 export function useAsyncDataWhen<T>(
   condition: boolean,

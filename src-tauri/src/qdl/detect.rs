@@ -9,10 +9,7 @@ use nusb::MaybeFuture;
 use super::{QdlDevice, EDL_PID, QUALCOMM_VID};
 use crate::log_debug;
 
-/// Detect all Qualcomm EDL devices currently connected via USB
-///
-/// Returns a list of QDL devices matching the Qualcomm EDL USB identifiers.
-/// Each device represents a board in Emergency Download mode ready for flashing.
+/// Detect connected Qualcomm devices in EDL (Emergency Download) mode over USB
 pub fn get_qdl_devices() -> Result<Vec<QdlDevice>, String> {
     let devices: Vec<QdlDevice> = nusb::list_devices()
         .wait()

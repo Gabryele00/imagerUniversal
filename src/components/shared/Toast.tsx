@@ -1,9 +1,4 @@
-/**
- * Toast notification component
- *
- * Displays temporary notification messages that auto-dismiss after a delay.
- * Supports success and error variants.
- */
+// Auto-dismissing success/error notification toast
 
 import { useState, useEffect } from 'react';
 

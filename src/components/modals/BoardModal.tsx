@@ -37,17 +37,15 @@ export function BoardModal({ isOpen, onClose, onSelect, manufacturer }: BoardMod
     return !!(boards && boards.length > 0 && vendorLogosChecked);
   }, [boards, vendorLogosChecked]);
 
-  // Show skeleton with minimum delay
   const { showSkeleton } = useSkeletonLoading(loading, boardsReady);
 
-  // Reset images when manufacturer changes
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset state when manufacturer changes
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset images when manufacturer changes
     setBoardImages({});
     loadedSlugsRef.current.clear();
   }, [manufacturer?.id]);
 
-  // Pre-load images for current manufacturer
+  // Preload board images for the current manufacturer
   useEffect(() => {
     const manufacturerId = manufacturer?.id;
     if (!isOpen || !manufacturerId || !boards || !vendorLogosChecked) return;
@@ -62,7 +60,6 @@ export function BoardModal({ isOpen, onClose, onSelect, manufacturer }: BoardMod
       await Promise.all(manufacturerBoards.map(async (board) => {
         if (loadedSlugsRef.current.has(board.slug)) return;
 
-        // Use cache-first approach: get from local cache as data URI
         const dataUri = await getCachedBoardImage(board.slug);
         loadedSlugsRef.current.add(board.slug);
 

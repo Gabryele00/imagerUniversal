@@ -1,7 +1,4 @@
-/**
- * Skeleton loading components for cards and lists
- * Displays animated placeholders while content is loading
- */
+// Skeleton placeholders shown while cards and lists load
 
 import { UI } from '../../config';
 
@@ -9,10 +6,6 @@ interface BoardCardSkeletonProps {
   count?: number;
 }
 
-/**
- * Skeleton component for board grid cards
- * Shows placeholders matching the board card layout
- */
 export function BoardCardSkeleton({ count = UI.SKELETON.BOARD_GRID_COUNT }: BoardCardSkeletonProps) {
   return (
     <>
@@ -36,10 +29,6 @@ interface ListItemSkeletonProps {
   count?: number;
 }
 
-/**
- * Skeleton component for list items
- * Shows placeholders matching the list item layout
- */
 export function ListItemSkeleton({ count = UI.SKELETON.LIST_COUNT }: ListItemSkeletonProps) {
   return (
     <>

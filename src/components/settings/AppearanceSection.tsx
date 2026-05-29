@@ -6,12 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { changeLanguage as i18nChangeLanguage, getCurrentLanguage } from '../../i18n';
 import { SUPPORTED_LANGUAGES } from '../../config/i18n';
 
-/**
- * Appearance settings section combining theme and language selection
- *
- * Theme: Light, Dark, Auto clickable box cards with icons.
- * Language: List of 18 languages with Twemoji flag rendering.
- */
+// Theme and language preference settings
 export function AppearanceSection() {
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
@@ -19,9 +14,7 @@ export function AppearanceSection() {
   const [initialized, setInitialized] = useState(false);
   const languageListRef = useRef<HTMLDivElement>(null);
 
-  /**
-   * Check if language is set to auto on mount
-   */
+  // Default to "auto" when no language is explicitly saved
   useEffect(() => {
     const checkAutoLanguage = async () => {
       try {
@@ -39,18 +32,13 @@ export function AppearanceSection() {
     checkAutoLanguage();
   }, []);
 
-  /**
-   * Parse flags with Twemoji when component mounts or language changes
-   */
+  // Render flag emojis as Twemoji images
   useEffect(() => {
     if (languageListRef.current) {
       twemoji.parse(languageListRef.current);
     }
   }, [currentLanguage]);
 
-  /**
-   * Handle language change
-   */
   const handleLanguageChange = async (langCode: string) => {
     try {
       await i18nChangeLanguage(langCode);

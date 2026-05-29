@@ -27,25 +27,18 @@ interface ImageModalProps {
   board: BoardInfo | null;
 }
 
-/**
- * Filter predicates - defined once, used for both checking availability and filtering
- * Each predicate returns true if the image matches the filter criteria
- */
-/** True for trunk / rolling-release builds (release version contains "trunk") */
+// Trunk / rolling-release builds carry "trunk" in their release version
 const isTrunkImage = (img: ImageInfo): boolean => img.release.toLowerCase().includes('trunk');
 
+// Predicates shared by availability checks and filtering
 const IMAGE_FILTER_PREDICATES: Record<Exclude<ImageFilterType, 'all'>, (img: ImageInfo) => boolean> = {
-  // Recommended: promoted images
   recommended: (img) => img.promoted === true,
-  // Stable: released builds, excluding rolling/trunk (which has its own filter)
+  // Exclude trunk so Stable and Rolling stay mutually exclusive
   stable: (img) => img.stability === 'stable' && !isTrunkImage(img),
-  // Nightly: stability field is "nightly"
   nightly: (img) => img.stability === 'nightly',
-  // Rolling: trunk / rolling-release builds
   rolling: isTrunkImage,
-  // Apps: has preinstalled application
   apps: (img) => !!(img.preinstalled_application && img.preinstalled_application.length > 0),
-  // Barebone/Minimal: no desktop environment and no preinstalled apps
+  // Minimal: no desktop environment and no preinstalled apps
   barebone: (img) => {
     const variant = img.image_variant.toLowerCase();
     const hasDesktop = DESKTOP_ENVIRONMENTS.some(de => variant.includes(de));
@@ -54,18 +47,16 @@ const IMAGE_FILTER_PREDICATES: Record<Exclude<ImageFilterType, 'all'>, (img: Ima
   },
 };
 
-/** Check if any images match a filter */
 function hasImagesForFilter(images: ImageInfo[], filter: Exclude<ImageFilterType, 'all'>): boolean {
   return images.some(IMAGE_FILTER_PREDICATES[filter]);
 }
 
-/** Apply filter to images */
 function applyFilter(images: ImageInfo[], filter: ImageFilterType): ImageInfo[] {
   if (filter === 'all') return images;
   return images.filter(IMAGE_FILTER_PREDICATES[filter]);
 }
 
-/** Filter button configuration for data-driven rendering */
+// Data-driven filter button list
 const FILTER_BUTTONS: Array<{
   key: Exclude<ImageFilterType, 'all'>;
   labelKey: string;
@@ -90,56 +81,43 @@ export function ImageModal({ isOpen, onClose, onSelect, board }: ImageModalProps
       setFilterType('all');
     }
   }, [isOpen]);
-  // State for unstable image warning
   const [pendingImage, setPendingImage] = useState<ImageInfo | null>(null);
   const [showUnstableWarning, setShowUnstableWarning] = useState(false);
 
-  // Use hook for async data fetching
   const { data: allImages, loading, error, reload } = useAsyncDataWhen<ImageInfo[]>(
     isOpen && !!board,
     () => getImagesForBoard(board!.slug),
     [isOpen, board?.slug]
   );
 
-  // Derive images ready state
   const imagesReady = useMemo(() => {
     return !!(allImages && allImages.length > 0);
   }, [allImages]);
 
-  // Show skeleton with minimum delay
   const { showSkeleton } = useSkeletonLoading(loading, imagesReady);
 
-  // Reset warning state when modal is closed
   useEffect(() => {
     if (!isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset warning state when modal closes to prevent stale state from leaking into next session
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset warning state on close
       setPendingImage(null);
       setShowUnstableWarning(false);
     }
   }, [isOpen]);
 
-  /**
-   * Handle image click - show warning for unstable images before selecting
-   */
+  // Warn before selecting nightly builds or community-board images
   function handleImageClick(image: ImageInfo) {
-    // Check if warning is needed
     const isNightly = image.stability === 'nightly';
     const isCommunityBoard = board?.support_tier === 'community';
 
-    // No warning for custom images or stable images on supported boards
     if (!isNightly && !isCommunityBoard) {
       onSelect(image);
       return;
     }
 
-    // Show warning for nightly builds or community-supported boards
     setPendingImage(image);
     setShowUnstableWarning(true);
   }
 
-  /**
-   * Confirm unstable image selection - proceed with pending image
-   */
   function handleUnstableWarningConfirm() {
     if (pendingImage) {
       onSelect(pendingImage);
@@ -148,15 +126,11 @@ export function ImageModal({ isOpen, onClose, onSelect, board }: ImageModalProps
     setShowUnstableWarning(false);
   }
 
-  /**
-   * Cancel unstable image selection - return to image list
-   */
   function handleUnstableWarningCancel() {
     setPendingImage(null);
     setShowUnstableWarning(false);
   }
 
-  // Calculate available filters based on all images
   const availableFilters = useMemo(() => {
     if (!allImages) return { recommended: false, stable: false, nightly: false, rolling: false, apps: false, barebone: false };
     return {
@@ -169,7 +143,6 @@ export function ImageModal({ isOpen, onClose, onSelect, board }: ImageModalProps
     };
   }, [allImages]);
 
-  // Apply filter using useMemo
   const filteredImages = useMemo(() => {
     if (!allImages) return [];
     return applyFilter(allImages, filterType);
@@ -222,8 +195,6 @@ export function ImageModal({ isOpen, onClose, onSelect, board }: ImageModalProps
             const osInfo = getOsInfo(image.distro_release);
             const appInfo = getAppInfo(image.preinstalled_application);
             const badgeConfig = kernelType ? KERNEL_BADGES[kernelType] : null;
-
-            // Use app logo if available, otherwise use OS logo
             const displayInfo = appInfo || osInfo;
 
             return (
@@ -232,7 +203,6 @@ export function ImageModal({ isOpen, onClose, onSelect, board }: ImageModalProps
                 className={`list-item ${image.promoted ? 'promoted' : ''}`}
                 onClick={() => handleImageClick(image)}
               >
-                {/* OS/App Icon */}
                 <div className="list-item-icon os-icon" style={{ backgroundColor: displayInfo?.color || DEFAULT_COLOR }}>
                   {displayInfo?.logo ? (
                     <img src={displayInfo.logo} alt={displayInfo.name} />
@@ -246,7 +216,6 @@ export function ImageModal({ isOpen, onClose, onSelect, board }: ImageModalProps
                     Armbian {image.release} {image.distro_release}
                   </div>
 
-                  {/* Side panel with main info */}
                   <div className="image-info-side-panel">
                     {/* Variant badge (desktop or CLI) - always shown, even with an app overlay */}
                     {desktopEnv && DESKTOP_BADGES[desktopEnv] ? (
@@ -277,7 +246,6 @@ export function ImageModal({ isOpen, onClose, onSelect, board }: ImageModalProps
                       </div>
                     )}
 
-                    {/* Kernel branch badge */}
                     {badgeConfig && (
                       <div
                         className="side-info-badge badge-kernel"
@@ -325,7 +293,6 @@ export function ImageModal({ isOpen, onClose, onSelect, board }: ImageModalProps
         </>
       )}
 
-      {/* Image status warning dialog */}
       {showUnstableWarning && pendingImage && (
         <ConfirmationDialog
           isOpen={showUnstableWarning}

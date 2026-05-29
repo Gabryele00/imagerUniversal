@@ -76,9 +76,6 @@ fn now_secs() -> u64 {
 }
 
 /// Initialize metadata from disk if not yet loaded (helper for use under lock)
-///
-/// Uses `get_or_insert_with` to avoid redundant disk reads once
-/// the in-memory cache is populated.
 fn init_meta_from_disk(guard: &mut Option<AssetsMeta>) -> &mut AssetsMeta {
     guard.get_or_insert_with(|| {
         let meta_path = get_meta_path();
@@ -101,8 +98,7 @@ fn init_meta_from_disk(guard: &mut Option<AssetsMeta>) -> &mut AssetsMeta {
 
 /// Persist metadata to disk (helper for use under lock)
 ///
-/// Uses synchronous I/O because the caller already holds the async mutex
-/// and the metadata file is small. This keeps the critical section atomic.
+/// Sync I/O keeps the critical section atomic since the file is small.
 fn persist_meta_to_disk(meta: &AssetsMeta) {
     let meta_path = get_meta_path();
     if let Some(parent) = meta_path.parent() {
@@ -123,8 +119,7 @@ async fn load_meta() -> AssetsMeta {
 
 /// Atomically update a single entry in metadata and persist to disk
 ///
-/// Holds the mutex for the entire read-modify-write cycle to prevent
-/// concurrent tasks from overwriting each other's changes.
+/// Holds the mutex for the whole read-modify-write cycle to avoid lost updates.
 async fn update_entry(key: &str, entry: AssetEntry) {
     let mut guard = META.lock().await;
     let meta = init_meta_from_disk(&mut guard);
@@ -132,21 +127,11 @@ async fn update_entry(key: &str, entry: AssetEntry) {
     persist_meta_to_disk(meta);
 }
 
-/// Get a cached asset, downloading if needed
+/// Get a cached asset, downloading on miss
 ///
-/// Cache-first strategy:
-/// - If file exists locally, return path immediately (spawn background
-///   refresh if stale, i.e. not checked in over 24 hours)
-/// - If file is missing, download synchronously and return path
-/// - If download fails, return `None`
-///
-/// # Arguments
-/// * `kind` - Asset category directory: `"boards"` or `"vendors"`
-/// * `key` - Asset identifier (board slug or vendor id)
-/// * `remote_url` - Full URL to download from
-///
-/// # Returns
-/// Local file path on success, or `None` if the asset could not be obtained
+/// Cache-first: serve a local file immediately (refreshing in the background
+/// if stale), otherwise download synchronously. Returns `None` on failure.
+/// `kind` is the category dir ("boards" or "vendors"), `key` the slug/id.
 pub async fn get_asset(kind: &str, key: &str, remote_url: &str) -> Option<PathBuf> {
     // Reject keys with path traversal characters
     if key.contains('/') || key.contains('\\') || key.contains("..") {
@@ -402,11 +387,9 @@ pub async fn read_as_data_uri(path: &Path) -> Option<String> {
     }
 }
 
-/// Pre-populate the asset cache by downloading all board images and vendor logos
+/// Pre-populate the asset cache with all board images and vendor logos
 ///
-/// Fetches board and vendor lists from the Armbian REST API (with disk cache fallback),
-/// then downloads images and logos using a semaphore to limit concurrency.
-/// Intended to be called once at app startup in the background.
+/// Runs once at startup in the background; concurrency is capped by a semaphore.
 pub async fn prepopulate_assets() {
     log_info!(MODULE, "Pre-populating asset cache...");
 
@@ -487,11 +470,7 @@ pub async fn prepopulate_assets() {
     );
 }
 
-/// Refresh all stale assets in the background
-///
-/// Iterates all entries in meta.json and sends conditional requests
-/// for entries that haven't been checked in over 24 hours.
-/// Uses a semaphore to limit concurrent requests.
+/// Refresh stale assets (last checked >24h ago) with conditional requests
 pub async fn refresh_stale_assets() {
     let meta = load_meta().await;
 

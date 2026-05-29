@@ -23,11 +23,8 @@ pub trait VerificationReader: Read + Send {}
 
 impl<T: Read + Send> VerificationReader for T {}
 
-/// Verify written data by comparing image file with device contents
-///
-/// This function is platform-agnostic and takes any reader that implements
-/// the Read trait. Platform-specific code is responsible for providing
-/// the appropriate device reader.
+/// Verify written data by comparing the image against a device reader.
+/// Platform-agnostic; the caller supplies the device `Read`er.
 pub fn verify_data<R: Read>(
     image_path: &PathBuf,
     device_reader: &mut R,

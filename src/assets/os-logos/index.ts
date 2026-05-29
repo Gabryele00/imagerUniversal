@@ -19,12 +19,7 @@ export const appLogos: Record<string, string> = Object.fromEntries(
     .map(([key, info]) => [key, info.logo as string]),
 );
 
-/**
- * Get the appropriate logo for an image based on distro release and preinstalled app
- * Priority: preinstalled app logo > OS logo based on distro > null (for generic icon)
- * For custom images, also checks the filename for OS/app keywords
- * Returns null if no matching logo found (caller should show generic icon)
- */
+/** Pick an image logo by priority: preinstalled-app logo > distro OS logo > null (generic icon) */
 export function getImageLogo(distroRelease: string, preinstalledApp?: string): string | null {
   // First check if there's a preinstalled app with a logo
   if (preinstalledApp) {

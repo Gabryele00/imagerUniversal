@@ -1,9 +1,4 @@
-/**
- * Hook to monitor internet connectivity via periodic checks
- *
- * Polls the backend connectivity check every 30 seconds.
- * Starts optimistic (online) until the first check completes.
- */
+// Poll backend connectivity every 30s; starts optimistic (online) until the first check
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { checkConnectivity } from './useTauri';

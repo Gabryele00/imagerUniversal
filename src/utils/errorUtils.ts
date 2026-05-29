@@ -1,9 +1,4 @@
-/**
- * Backend error tag parsing and translation utilities
- *
- * The Rust backend uses tagged error strings (e.g., [SHA_UNAVAILABLE], [QDL_DISCONNECTED])
- * to communicate error types. These functions parse the tags and map them to i18n keys.
- */
+// Parse the backend's tagged error strings (e.g. [SHA_UNAVAILABLE]) and map them to i18n keys
 
 /** Check if a SHA error indicates the SHA file was unavailable (not a mismatch) */
 export function isShaUnavailableError(error: string): boolean {

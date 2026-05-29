@@ -15,7 +15,7 @@ use crate::utils::format_size;
 
 use super::types::{detect_sd_from_name, normalize_bus_type, BlockDevice};
 
-/// Cached system disk identifier — resolved once at startup
+/// Cached system disk identifier, resolved once at startup
 static SYSTEM_DISK: OnceLock<Option<String>> = OnceLock::new();
 
 // ---------------------------------------------------------------------------

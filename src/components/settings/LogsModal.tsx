@@ -5,14 +5,9 @@ import Ansi from 'ansi-to-html';
 import { getLogs } from '../../hooks/useTauri';
 import { TIMING } from '../../config';
 
-/**
- * Strip ANSI escape codes from text
- * @param text - Text with ANSI codes
- * @returns Plain text without ANSI codes
- */
+// Remove ANSI escape codes from text
 function stripAnsiCodes(text: string): string {
-  // ANSI escape sequence pattern (eslint-disable-line required for control characters)
-  // eslint-disable-next-line no-control-regex
+  // eslint-disable-next-line no-control-regex -- matching control chars is intentional
   const ansiEscapePattern = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
   return text.replace(ansiEscapePattern, '');
 }
@@ -22,12 +17,7 @@ interface LogsModalProps {
   onClose: () => void;
 }
 
-/**
- * Modal component for viewing application logs
- *
- * Displays the latest log file contents with ANSI color formatting
- * and scroll behavior for easy debugging.
- */
+// Modal for viewing application logs with ANSI color formatting
 export function LogsModal({ isOpen, onClose }: LogsModalProps) {
   const { t } = useTranslation();
   const [logs, setLogs] = useState<string>('');
@@ -35,7 +25,6 @@ export function LogsModal({ isOpen, onClose }: LogsModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
 
-  // Load logs when modal opens
   useEffect(() => {
     if (isOpen) {
       loadLogs();
@@ -59,7 +48,6 @@ export function LogsModal({ isOpen, onClose }: LogsModalProps) {
   const handleCopyLogs = async () => {
     try {
       if (!logs) return;
-      // Strip ANSI codes to get plain text
       const plainText = stripAnsiCodes(logs);
       await navigator.clipboard.writeText(plainText);
       setCopied(true);
@@ -69,7 +57,6 @@ export function LogsModal({ isOpen, onClose }: LogsModalProps) {
     }
   };
 
-  // Convert ANSI to HTML
   const ansiConverter = new Ansi({
     fg: '#FFF',
     bg: '#000',

@@ -353,8 +353,7 @@ async fn do_flash_work(
             break;
         }
 
-        // Raw device (/dev/rdisk) requires sector-aligned writes.
-        // The last chunk may need zero-padding to the next sector boundary.
+        // Raw device requires sector-aligned writes; pad the final chunk
         let bytes_to_write = if bytes_read % SECTOR_SIZE != 0 {
             let padded = bytes_read.div_ceil(SECTOR_SIZE) * SECTOR_SIZE;
             buffer[bytes_read..padded].fill(0);
@@ -413,8 +412,6 @@ async fn do_flash_work(
 }
 
 /// Verify written data by reading back and comparing.
-/// Wraps device in BufReader so all reads from the raw device (/dev/rdisk) are
-/// CHUNK_SIZE-aligned, even when verify_data requests a smaller final read.
 fn verify_written_data(
     image_path: &PathBuf,
     device: &mut File,
@@ -426,8 +423,7 @@ fn verify_written_data(
         libc::lseek(device_fd, 0, libc::SEEK_SET);
     }
 
-    // BufReader ensures all underlying reads from the raw device are large and
-    // sector-aligned, preventing EINVAL on the final partial-sector read.
+    // BufReader keeps raw-device reads sector-aligned, avoiding EINVAL on the final read
     let mut buf_reader = BufReader::with_capacity(config::flash::CHUNK_SIZE, &*device);
     crate::flash::verify::verify_data(image_path, &mut buf_reader, state)
 }

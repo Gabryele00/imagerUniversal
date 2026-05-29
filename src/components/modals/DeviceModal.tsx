@@ -11,7 +11,6 @@ import { POLLING, UI, type DeviceType } from '../../config';
 import { getDeviceColors } from '../../config/deviceColors';
 import { getDeviceType } from '../../utils/deviceUtils';
 
-/** Get icon component for device type */
 function DeviceIcon({ type, size = 24 }: { type: DeviceType; size?: number }) {
   switch (type) {
     case 'system':
@@ -28,7 +27,6 @@ function DeviceIcon({ type, size = 24 }: { type: DeviceType; size?: number }) {
   }
 }
 
-/** Get badge text for device type */
 function getDeviceBadge(type: DeviceType, t: (key: string) => string): string | null {
   switch (type) {
     case 'system':
@@ -56,17 +54,15 @@ function devicesChanged(prev: BlockDevice[] | null, next: BlockDevice[]): boolea
   return next.some(d => !prevKeys.has(`${d.path}:${d.size}`));
 }
 
-/** Sort devices: system first, then by size (largest first) */
+/** Sort devices: system first, then by size descending */
 function sortDevices(devices: BlockDevice[]): BlockDevice[] {
   return [...devices].sort((a, b) => {
-    // System devices first
     if (a.is_system !== b.is_system) return a.is_system ? -1 : 1;
-    // Then by size (largest first)
     return b.size - a.size;
   });
 }
 
-/** Convert a QDL device to a BlockDevice for compatibility with the selection flow */
+// Map a QDL device onto BlockDevice so it flows through the same selection UI
 function qdlToBlockDevice(qdl: QdlDevice): BlockDevice {
   return {
     path: `qdl://${qdl.bus_id}/${qdl.device_address}`,
@@ -95,13 +91,11 @@ export function DeviceModal({ isOpen, onClose, onSelect, flashMethod }: DeviceMo
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSystemDevices, setShowSystemDevices] = useState(false);
 
-  // Track previous devices for change detection
   const prevDevicesRef = useRef<BlockDevice[] | null>(null);
   const [devices, setDevices] = useState<BlockDevice[]>([]);
 
   const isQdlMode = flashMethod === 'qdl';
 
-  // Initial load when modal opens - use QDL or block device detection
   const { data: rawDevices, loading, error, reload } = useAsyncDataWhen<BlockDevice[]>(
     isOpen,
     async () => {
@@ -114,7 +108,7 @@ export function DeviceModal({ isOpen, onClose, onSelect, flashMethod }: DeviceMo
     [isOpen, isQdlMode]
   );
 
-  // Derive devices ready state (also ready when no devices found after loading)
+  // Also "ready" when loading finished with no devices found
   const devicesReady = useMemo(() => {
     return (devices && devices.length > 0) || !loading;
   }, [devices, loading]);
@@ -125,7 +119,6 @@ export function DeviceModal({ isOpen, onClose, onSelect, flashMethod }: DeviceMo
     return sortDevices(filtered);
   }, [devices, showSystemDevices]);
 
-  // Show skeleton with minimum delay
   const { showSkeleton } = useSkeletonLoading(loading, devicesReady);
 
   // Update devices only when they actually change

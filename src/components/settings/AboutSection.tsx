@@ -17,19 +17,7 @@ import { getTauriVersion, getSystemInfo } from '../../hooks/useTauri';
 import { LINKS } from '../../config/constants';
 import armbianLogo from '../../../src-tauri/icons/icon.png';
 
-/**
- * About section
- *
- * Displays app information including:
- * - Hero with logo and description
- * - Technical details (version, platform, arch, Tauri version)
- * - External links (GitHub, Docs, Issues, Forum)
- */
-
-/**
- * Format platform name for display
- * Maps platform identifiers to user-friendly names
- */
+// Map platform identifiers to display names
 function formatPlatformName(platform: string): string {
   const platformNames: Record<string, string> = {
     macos: 'macOS',
@@ -39,12 +27,6 @@ function formatPlatformName(platform: string): string {
   return platformNames[platform] || platform;
 }
 
-/**
- * Info card component
- *
- * Displays a piece of information with an icon, label, and value.
- * Used in the About section to show app details.
- */
 interface InfoCardProps {
   icon: LucideIcon;
   label: string;
@@ -63,9 +45,6 @@ function InfoCard({ icon: Icon, label, value }: InfoCardProps) {
   );
 }
 
-/**
- * Link button component
- */
 interface LinkButtonProps {
   icon: React.ComponentType<{ className?: string; size?: number }>;
   text: string;
@@ -102,7 +81,6 @@ export function AboutSection() {
         setAppVersion(version);
         setTauriVersion(tauriVer);
 
-        // Format platform name for display
         setPlatform(formatPlatformName(systemInfo.platform));
         setArch(systemInfo.arch);
       } catch (error) {

@@ -1,10 +1,4 @@
-/**
- * Cache Manager Modal
- *
- * Displays cached images organized by board with per-image
- * delete and "reuse for flashing" capabilities.
- * Uses the same visual patterns as ImageModal for consistency.
- */
+// Modal for viewing and managing cached board images
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -41,9 +35,7 @@ const DEFAULT_COLOR = 'var(--bg-secondary)';
 /** Fallback board image (Armbian logo) */
 const FALLBACK_IMAGE = '/armbian-logo_nofound.png';
 
-/**
- * Format a relative time string from a Unix timestamp
- */
+// Format a Unix timestamp as relative time (e.g. "2 hours ago")
 function formatRelativeTime(timestamp: number, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const now = Math.floor(Date.now() / 1000);
   const diff = now - timestamp;
@@ -89,7 +81,7 @@ export function CacheManagerModal({ isOpen, onClose }: CacheManagerModalProps) {
         const images = await listCachedImages();
         setCachedImages(images);
 
-        // Board data is optional — used for badges and full names.
+        // Board data is optional, used for badges and full names.
         // When offline, we gracefully degrade to filename-based metadata.
         try {
           const boards = await getBoards();
@@ -283,7 +275,7 @@ export function CacheManagerModal({ isOpen, onClose }: CacheManagerModalProps) {
                       </div>
                     </div>
 
-                    {/* Expanded image list — uses same pattern as ImageModal */}
+                    {/* Expanded image list, uses same pattern as ImageModal */}
                     {isExpanded && (
                       <div className="cache-group-content">
                         <div className="modal-list">
@@ -300,7 +292,7 @@ export function CacheManagerModal({ isOpen, onClose }: CacheManagerModalProps) {
                                 className="list-item cache-list-item"
                                 style={{ animationDelay: `${index * 25}ms` }}
                               >
-                                {/* OS Icon — same as ImageModal */}
+                                {/* OS Icon, same as ImageModal */}
                                 <div className="list-item-icon os-icon" style={{ backgroundColor: osInfo?.color || DEFAULT_COLOR }}>
                                   {osInfo?.logo ? (
                                     <img src={osInfo.logo} alt={osInfo.name} />
@@ -309,7 +301,7 @@ export function CacheManagerModal({ isOpen, onClose }: CacheManagerModalProps) {
                                   )}
                                 </div>
 
-                                {/* Content — same structure as ImageModal */}
+                                {/* Content, same structure as ImageModal */}
                                 <div className="list-item-content">
                                   <div className="list-item-title">
                                     {parsed?.version

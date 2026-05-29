@@ -14,10 +14,8 @@ use crate::{log_debug, log_error, log_info};
 
 use super::state::AppState;
 
-/// Request write authorization before starting the flash process
-/// This shows the authorization dialog (Touch ID on macOS) BEFORE downloading
-/// On Linux, if not root, this triggers pkexec to elevate and restart the app
-/// Returns true if authorized, false if user cancelled
+/// Request write authorization before download (Touch ID on macOS, pkexec re-launch
+/// on Linux when not root). Returns false if the user cancels.
 #[tauri::command]
 pub async fn request_write_authorization(device_path: String) -> Result<bool, String> {
     log_info!(
@@ -133,10 +131,7 @@ pub async fn flash_image(
     result
 }
 
-/// Force delete a cached image regardless of cache settings
-///
-/// Used when an image repeatedly fails to flash, suggesting the cached
-/// file may be corrupted. Bypasses the cache_enabled check.
+/// Force-delete a cached image (bypasses cache_enabled), for when a file looks corrupted
 #[tauri::command]
 pub async fn force_delete_cached_image(image_path: String) -> Result<(), String> {
     log_info!("operations", "Force delete cached image: {}", image_path);
@@ -172,10 +167,7 @@ pub async fn force_delete_cached_image(image_path: String) -> Result<(), String>
     Ok(())
 }
 
-/// Delete a downloaded image file
-///
-/// If image caching is enabled, the file is kept for future use.
-/// If caching is disabled, the file is deleted.
+/// Delete a downloaded image, unless caching is enabled (then it is kept for reuse)
 #[tauri::command]
 pub async fn delete_downloaded_image(image_path: String, app: AppHandle) -> Result<(), String> {
     log_info!("operations", "Delete request for image: {}", image_path);

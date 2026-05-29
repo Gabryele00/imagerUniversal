@@ -176,14 +176,8 @@ pub async fn delete_decompressed_custom_image(image_path: String) -> Result<(), 
     Ok(())
 }
 
-/// Check if a custom image file is a QDL (Qualcomm EDL) archive
-///
-/// Inspects the archive contents for a valid QDL structure:
-/// - rawprogram0.xml (partition programming instructions)
-/// - prog_firehose_ddr.elf (Sahara firehose programmer)
-///
-/// Supports plain .tar and compressed archives (.tar.xz, .tar.gz, .tar.bz2, .tar.zst).
-/// Files that are not TAR archives (e.g. .img) return false without error.
+/// Check whether a custom image is a QDL archive (TAR containing rawprogram0.xml
+/// and prog_firehose_ddr.elf). Non-TAR files like .img return false, not an error.
 #[tauri::command]
 pub async fn check_is_qdl_image(image_path: String) -> Result<bool, String> {
     let path = PathBuf::from(&image_path);
@@ -209,12 +203,8 @@ pub async fn check_is_qdl_image(image_path: String) -> Result<bool, String> {
         return Ok(has_qdl);
     }
 
-    // For compressed TAR archives (.tar.xz, .tar.gz, etc.), full decompression
-    // is too slow. Instead, verify it's actually a valid TAR by decompressing
-    // only the first entry header (~512 bytes). In the Armbian ecosystem, a
-    // compressed .tar is always a QDL flash archive (block-device images use
-    // .img.xz). The actual QDL file structure is validated after full extraction
-    // in the flash pipeline (extract.rs::validate_required_files).
+    // Compressed TAR is always a QDL archive in Armbian; only decompress the
+    // first header to confirm validity (full validation happens after extraction).
     if filename.contains(".tar.") {
         log_debug!(
             "custom_image",
@@ -271,13 +261,8 @@ fn check_tar_for_qdl<R: std::io::Read>(reader: R) -> bool {
     false
 }
 
-/// Quick check for QDL structure in a compressed TAR by reading only the first
-/// few entry headers. Looks for a "flash/" directory or paths containing "/flash/"
-/// which indicate QDL archive layout. Only decompresses headers of the first
-/// entries (before the large rootfs blob), so it's fast (~1 second max).
-///
-/// The full QDL file validation (rawprogram0.xml, prog_firehose_ddr.elf)
-/// happens after extraction in the flash pipeline.
+/// Quick check for QDL layout in a compressed TAR by reading only the first
+/// entry headers (a "flash/" directory), stopping before the large rootfs blob.
 fn quick_check_qdl_structure<R: std::io::Read>(reader: R) -> bool {
     let mut archive = tar::Archive::new(reader);
     let entries = match archive.entries() {
@@ -285,9 +270,8 @@ fn quick_check_qdl_structure<R: std::io::Read>(reader: R) -> bool {
         Err(_) => return false,
     };
 
-    // Check the first entries — in QDL archives, directory entries and small
-    // files come before the large rootfs. We stop after finding a "flash/"
-    // directory or after hitting a large file entry (to avoid decompressing it).
+    // Stop once a "flash/" directory is found or a large file is hit, since
+    // QDL directory and small-file entries precede the large rootfs.
     const MAX_SMALL_ENTRIES: usize = 10;
     const LARGE_FILE_THRESHOLD: u64 = 100 * 1024 * 1024; // 100MB
 

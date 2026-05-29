@@ -170,12 +170,7 @@ export interface CachedImageInfo {
   board_name: string | null;
 }
 
-/**
- * Armbian system information from /etc/armbian-release
- *
- * Contains essential information about the currently running Armbian system.
- * This is populated when the app is running on an Armbian installation.
- */
+/** Board identification read from /etc/armbian-release */
 export interface ArmbianReleaseInfo {
   board: string; // e.g., "orangepi-5" - Board identifier for matching
   board_name: string; // e.g., "Orange Pi 5" - Human-readable board name for display

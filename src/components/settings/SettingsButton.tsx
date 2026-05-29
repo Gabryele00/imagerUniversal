@@ -5,11 +5,7 @@ import { SettingsModal } from './SettingsModal';
 import { useModalExitAnimation } from '../../hooks/useModalExitAnimation';
 import { EVENTS } from '../../config';
 
-/**
- * Settings button component
- *
- * Displays a settings icon in the bottom-right corner that opens the settings modal.
- */
+// Bottom-right settings icon that opens the settings modal
 export function SettingsButton() {
   const { t } = useTranslation();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);

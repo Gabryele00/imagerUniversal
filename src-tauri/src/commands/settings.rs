@@ -170,10 +170,7 @@ pub fn get_system_info() -> SystemInfo {
     SystemInfo { platform, arch }
 }
 
-/// Get the Tauri version
-///
-/// Returns the Tauri framework version as a compile-time constant.
-/// The version is extracted from Cargo.toml during build time via build.rs.
+/// Get the Tauri framework version (compile-time constant from build.rs)
 #[tauri::command]
 pub fn get_tauri_version() -> String {
     env!("TAURI_VERSION").to_string()
@@ -257,10 +254,7 @@ pub fn set_developer_mode(enabled: bool, app: tauri::AppHandle) -> Result<(), St
     }
 }
 
-/// Read only the last N lines from a file to avoid loading large files into memory
-///
-/// This function is optimized for large log files by reading line-by-line
-/// and only keeping the last N lines in memory.
+/// Read only the last N lines of a file, to avoid loading large logs into memory
 fn read_last_lines(path: &std::path::PathBuf, lines: usize) -> Result<String, String> {
     use std::io::{BufRead, BufReader};
 
@@ -278,11 +272,7 @@ fn read_last_lines(path: &std::path::PathBuf, lines: usize) -> Result<String, St
     Ok(all_lines[start..].join("\n"))
 }
 
-/// Get the latest log file contents
-///
-/// For large log files (>5MB), only the last 10,000 lines are returned
-/// to avoid memory issues. This prevents the application from consuming
-/// excessive memory when viewing logs.
+/// Get the latest log contents (last 10k lines when the file exceeds 5MB)
 #[tauri::command]
 pub fn get_logs() -> Result<String, String> {
     use crate::logging;
@@ -482,19 +472,13 @@ pub fn clear_cache() -> Result<(), String> {
 // Cache Manager
 // ============================================================================
 
-/// List all cached images with metadata
-///
-/// Returns information about each cached file including filename, size,
-/// last used timestamp, and board association parsed from filename.
+/// List cached images with metadata (filename, size, last used, parsed board)
 #[tauri::command]
 pub fn list_cached_images() -> Result<Vec<crate::cache::CachedImageInfo>, String> {
     crate::cache::list_cached_images()
 }
 
-/// Delete a single cached image by filename
-///
-/// Validates the filename is within the cache directory, deletes the file,
-/// and returns the updated total cache size in bytes.
+/// Delete one cached image by filename, returning the new total cache size in bytes
 #[tauri::command]
 pub fn delete_cached_image(filename: String) -> Result<u64, String> {
     crate::cache::delete_cached_image(&filename)
@@ -504,12 +488,7 @@ pub fn delete_cached_image(filename: String) -> Result<u64, String> {
 // Armbian Board Detection Settings
 // ============================================================================
 
-/// Get the Armbian board detection mode
-///
-/// Returns the detection mode:
-/// - "disabled": Don't detect or auto-select
-/// - "modal": Show confirmation modal before auto-selecting
-/// - "auto": Automatically select without confirmation
+/// Get the Armbian board detection mode ("disabled", "modal", or "auto")
 #[tauri::command]
 pub fn get_armbian_board_detection(app: tauri::AppHandle) -> String {
     match app.store(SETTINGS_STORE) {
@@ -534,12 +513,7 @@ pub fn get_armbian_board_detection(app: tauri::AppHandle) -> String {
     }
 }
 
-/// Set the Armbian board detection mode
-///
-/// Valid values:
-/// - "disabled": Don't detect or auto-select
-/// - "modal": Show confirmation modal before auto-selecting
-/// - "auto": Automatically select without confirmation
+/// Set the Armbian board detection mode ("disabled", "modal", or "auto")
 #[tauri::command]
 pub fn set_armbian_board_detection(mode: String, app: tauri::AppHandle) -> Result<(), String> {
     // Validate mode

@@ -70,20 +70,12 @@ fn strip_image_extensions(filename: &str) -> &str {
     name.strip_suffix(".img").unwrap_or(name)
 }
 
-/// Parse an Armbian image filename into structured metadata
+/// Parse an Armbian image filename into structured metadata.
 ///
-/// Handles multiple naming conventions:
-/// - Standard: `Armbian_{version}_{board}_{distro}_{branch}_{kernel}[_{desktop}].img[.ext]`
-/// - Labeled: `Armbian_{label}_{version}_{board}_{distro}_{branch}_{kernel}[_{desktop}].img[.ext]`
-/// - Prefixed: `Armbian-unofficial_{version}_{board}_...` (parts[0] starts with "armbian")
-///
-/// Detection logic: if `parts[1]` does not start with a digit, it is treated as
-/// a label and all subsequent field indices are shifted by 1.
-///
-/// Examples:
-/// - `Armbian_25.02.0_Nanopi-m5_bookworm_current_6.12.8_gnome.img.xz`
-/// - `Armbian_community_26.2.0-trunk.493_Youyeetoo-r1-v3_trixie_edge_6.19.3_minimal.img`
-/// - `Armbian-unofficial_26.02.0-trunk_Cix-acpi_trixie_edge_6.19.4_minimal.img.xz`
+/// Handles three naming conventions:
+/// - Standard:  `Armbian_{version}_{board}_{distro}_{branch}_{kernel}[_{desktop}]`
+/// - Labeled:   `Armbian_{label}_{version}_{board}_...` (label when parts[1] is non-numeric)
+/// - Prefixed:  `Armbian-unofficial_{version}_{board}_...`
 pub fn parse_armbian_filename(filename: &str) -> Option<ArmbianFilenameInfo> {
     let name = strip_image_extensions(filename);
     let parts: Vec<&str> = name.split('_').collect();

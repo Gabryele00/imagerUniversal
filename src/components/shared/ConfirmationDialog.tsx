@@ -1,6 +1,4 @@
-/**
- * Reusable confirmation dialog component
- */
+// Reusable confirmation dialog
 
 import type { ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';

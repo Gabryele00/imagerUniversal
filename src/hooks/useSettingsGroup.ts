@@ -1,9 +1,4 @@
-/**
- * Batch settings loader hook
- *
- * Loads multiple settings on mount with a single useEffect.
- * Reduces boilerplate and consolidates error handling.
- */
+// Load several settings together on mount with shared error handling
 
 import { useEffect, useState } from 'react';
 

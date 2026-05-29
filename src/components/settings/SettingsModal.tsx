@@ -14,12 +14,7 @@ interface SettingsModalProps {
   onClose: () => void;
 }
 
-/**
- * Settings modal with sidebar navigation
- *
- * Features a left sidebar with category options and a right content area.
- * Tabs: Appearance, Preferences, Storage, Developer, About.
- */
+// Settings modal: sidebar tabs (Appearance, Preferences, Storage, Developer, About) + content area
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { t } = useTranslation();
   const [activeSection, setActiveSection] = useState<SettingsView>('appearance');

@@ -222,11 +222,7 @@ pub fn error(module: &str, message: &str) {
     }
 }
 
-/// Set the minimum log level at runtime
-///
-/// This function allows dynamically changing the log level, for example
-/// when developer mode is toggled. When enabled, debug messages are shown.
-/// When disabled, only info and above are shown.
+/// Set the minimum log level at runtime (Debug if enabled, else Info)
 pub fn set_log_level(debug_enabled: bool) {
     if let Ok(mut logger) = LOGGER.lock() {
         let new_level = if debug_enabled {

@@ -17,18 +17,8 @@ pub const REQUIRED_FILES: &[&str] = &["rawprogram0.xml"];
 /// The firehose programmer ELF (required for Sahara upload)
 pub const FIREHOSE_ELF: &str = "prog_firehose_ddr.elf";
 
-/// Extract a QDL TAR archive to a temporary directory
-///
-/// Extracts the archive contents and validates that the required files
-/// for QDL flashing are present. Returns the path to the directory
-/// containing the extracted flash files.
-///
-/// # Arguments
-/// * `tar_path` - Path to the TAR archive
-/// * `output_dir` - Parent directory for extraction (a subdirectory will be created)
-///
-/// # Returns
-/// Path to the directory containing the extracted flash files
+/// Extract a QDL TAR archive under `output_dir`, validate the required flash
+/// files are present, and return the directory holding them.
 pub fn extract_qdl_archive(tar_path: &Path, output_dir: &Path) -> Result<PathBuf, String> {
     log_info!(
         "qdl::extract",
@@ -65,10 +55,8 @@ pub fn extract_qdl_archive(tar_path: &Path, output_dir: &Path) -> Result<PathBuf
     Ok(flash_dir)
 }
 
-/// Find the directory containing flash files within the extracted archive
-///
-/// Searches for a directory named "flash" or for rawprogram0.xml directly,
-/// handling nested directory structures like arduino-images/flash/.
+/// Find the flash-files directory in the extracted archive (a "flash" dir or
+/// rawprogram0.xml directly), handling nesting like arduino-images/flash/.
 fn find_flash_dir(extract_dir: &Path) -> Result<PathBuf, String> {
     // Check if rawprogram0.xml is directly in extract_dir
     if extract_dir.join("rawprogram0.xml").exists() {
@@ -165,10 +153,8 @@ fn validate_required_files(flash_dir: &Path) -> Result<(), String> {
     Ok(())
 }
 
-/// Detect archive compression from filename and return a boxed reader
-///
-/// Supports plain .tar and compressed archives (.tar.xz, .tar.gz, .tar.bz2, .tar.zst).
-/// Returns a `Box<dyn Read>` wrapping the appropriate decompression layer.
+/// Return a boxed reader for the archive, picking a decompressor by extension
+/// (.tar, .tar.xz, .tar.gz, .tar.bz2, .tar.zst).
 pub fn open_tar_reader(path: &Path) -> Result<Box<dyn std::io::Read>, String> {
     let file = fs::File::open(path).map_err(|e| format!("Failed to open archive: {}", e))?;
     let filename = path
@@ -192,10 +178,8 @@ pub fn open_tar_reader(path: &Path) -> Result<Box<dyn std::io::Read>, String> {
     }
 }
 
-/// Safely unpack a TAR archive, validating no entries escape the target directory
-///
-/// Rejects any archive entry containing parent directory components (`../`)
-/// to prevent path traversal attacks (CWE-22 / ZipSlip).
+/// Unpack a TAR archive, rejecting entries with `../` components to prevent
+/// path traversal (CWE-22 / ZipSlip).
 fn safe_unpack<R: std::io::Read>(reader: R, extract_dir: &Path) -> Result<(), String> {
     let mut archive = tar::Archive::new(reader);
     archive.set_preserve_permissions(false);

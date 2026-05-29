@@ -8,19 +8,10 @@ use crate::config;
 
 use super::get_cache_dir;
 
-/// Validates that a path is within the application cache directory
+/// Validates that a path resolves to within the cache directory.
 ///
-/// Canonicalizes both the target path and the cache directory to resolve
-/// symlinks and prevent path traversal attacks, then checks containment.
-///
-/// # Arguments
-/// * `path` - The path to validate
-///
-/// # Returns
-/// The canonicalized path if it is within the cache directory
-///
-/// # Errors
-/// Returns an error if the path cannot be resolved or is outside the cache directory
+/// Canonicalizes both paths to defeat symlink/traversal tricks, then checks
+/// containment. Returns the canonical path, or an error if outside the cache.
 pub fn validate_cache_path(path: &Path) -> Result<PathBuf, String> {
     let cache_dir = get_cache_dir(config::app::NAME)
         .canonicalize()
@@ -34,13 +25,7 @@ pub fn validate_cache_path(path: &Path) -> Result<PathBuf, String> {
     Ok(canonical_path)
 }
 
-/// Strip compression extension from filename (.xz, .gz, .bz2, .zst)
-///
-/// # Arguments
-/// * `filename` - The filename to strip the extension from
-///
-/// # Returns
-/// The filename without the compression extension, or the original if no match
+/// Strip a compression extension (.xz, .gz, .bz2, .zst), returning the original if none matches
 pub fn strip_compression_ext(filename: &str) -> &str {
     for ext in &[".xz", ".gz", ".bz2", ".zst"] {
         if let Some(stripped) = filename.strip_suffix(ext) {

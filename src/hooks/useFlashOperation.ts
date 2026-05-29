@@ -1,8 +1,4 @@
-/**
- * Hook that encapsulates the entire flash operation lifecycle:
- * authorization, download, decompression, flashing, verification,
- * device monitoring, progress polling, error recovery, and cleanup.
- */
+// Drives the full flash lifecycle: authorize, download, decompress, flash, verify, cleanup
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -317,7 +313,7 @@ export function useFlashOperation({
           } else if (prog.qdl_stage.startsWith('partition:') || prog.qdl_stage === 'firehose' || prog.qdl_stage === 'patching') {
             setStage('qdl_firehose');
           } else if (prog.qdl_stage === 'complete' || prog.qdl_stage === 'resetting') {
-            // Flash is done or resetting — don't trigger device disconnect error
+            // Flash is done or resetting, don't trigger device disconnect error
             return;
           }
 
@@ -452,7 +448,7 @@ export function useFlashOperation({
     try {
       await cancelOperation();
       if (intervalRef.current) clearInterval(intervalRef.current);
-      // For QDL: don't navigate away immediately — the blocking flash command
+      // For QDL: don't navigate away immediately, the blocking flash command
       // needs time to detect cancellation and clean up. Show cancelling state.
       if (isQdlMode) {
         setStage('authorizing');

@@ -51,13 +51,7 @@ pub struct ProgressSummary {
 }
 
 impl ProgressTracker {
-    /// Create a new progress tracker
-    ///
-    /// # Arguments
-    /// * `operation` - Name of the operation (e.g., "Download", "Flash")
-    /// * `module` - Module name for logging
-    /// * `total_bytes` - Total bytes to process (0 if unknown)
-    /// * `log_interval_mb` - Interval in MB between progress logs
+    /// Create a new progress tracker (`total_bytes` 0 when the size is unknown)
     pub fn new(operation: &str, module: &str, total_bytes: u64, log_interval_mb: u64) -> Self {
         let now = Instant::now();
         Self {

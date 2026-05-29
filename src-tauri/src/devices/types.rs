@@ -27,14 +27,8 @@ pub struct BlockDevice {
     pub is_read_only: bool,
 }
 
-/// Normalize a transport/protocol string into a canonical bus type.
-///
-/// Handles platform-specific variations:
-/// - macOS protocols: "Secure Digital", "Apple Fabric", "USB", etc.
-/// - Linux transports: "usb", "mmc", "sata", "nvme", "sas"
-/// - Windows bus types: "SD", "MMC", "USB", "SATA", "NVMe", "SAS"
-///
-/// Returns None for unknown or empty inputs.
+/// Normalize a platform-specific transport/protocol string (macOS/Linux/Windows)
+/// into a canonical bus type; None for unknown or empty input.
 pub fn normalize_bus_type(transport: &str) -> Option<String> {
     if transport.is_empty() {
         return None;

@@ -1,13 +1,4 @@
-/**
- * i18n Configuration
- *
- * Centralized configuration for all supported languages.
- *
- * To add a new language:
- * 1. Create a new JSON file in src/locales/{code}.json
- * 2. Add an entry to SUPPORTED_LANGUAGES below with metadata
- * 3. That's it! The language will be automatically loaded
- */
+// Supported-language config. To add one: drop src/locales/{code}.json and add an entry below.
 
 export interface LanguageMetadata {
   /** ISO 639-1 language code */
@@ -18,11 +9,7 @@ export interface LanguageMetadata {
   flag: string;
 }
 
-/**
- * Complete list of supported languages with metadata
- *
- * For new languages, add an entry here: { code: 'xx', name: 'Native Name', flag: '🇽🇽' }
- */
+// Supported languages: { code: 'xx', name: 'Native Name', flag: '🇽🇽' }
 const LANGUAGES: LanguageMetadata[] = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
   { code: 'de', name: 'Deutsch', flag: '🇩🇪' },

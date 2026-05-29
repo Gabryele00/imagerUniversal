@@ -28,12 +28,8 @@ use xmltree::{Element, XMLNode};
 use crate::flash::FlashState;
 use crate::{log_info, log_warn};
 
-/// Execute the full QDL flash operation
-///
-/// # Arguments
-/// * `flash_dir` - Directory containing firehose ELF, rawprogram0.xml, and partition images
-/// * `serial` - Optional USB serial number to target a specific device
-/// * `state` - Shared flash state for progress reporting and cancellation
+/// Execute the full QDL flash: upload firehose, program partitions from `flash_dir`,
+/// optionally targeting a device by `serial`, reporting progress via `state`.
 pub fn qdl_flash(
     flash_dir: &Path,
     serial: Option<String>,
@@ -491,16 +487,10 @@ fn check_cancelled(state: &FlashState) -> Result<(), String> {
     }
 }
 
-/// A Read wrapper that tracks data transfer progress and supports cancellation.
+/// Read wrapper that reports progress and aborts on cancellation.
 ///
-/// Counts the buffer size requested per `read()` call (not bytes returned),
-/// because `firehose_program_storage` sends full buffers even after the file
-/// reaches EOF (zero-padded). This matches sector-based total_bytes.
-///
-/// Also checks `is_cancelled` on each read, allowing cancellation mid-partition
-/// (within ~1MB granularity). The qdlrs library calls `.unwrap()` on the read
-/// result, so returning an error triggers a panic that is caught by tokio's
-/// `spawn_blocking` and converted to a user-visible error.
+/// Counts requested buffer size (not bytes returned) to match sector-based
+/// totals, and erroring on cancel propagates as a caught spawn_blocking panic.
 struct ProgressReader<R: Read, F: FnMut(u64)> {
     inner: R,
     bytes_transferred: u64,

@@ -4,21 +4,10 @@ import { invoke } from '@tauri-apps/api/core';
 import { load } from '@tauri-apps/plugin-store';
 import { SUPPORTED_LANGUAGES, getLanguageFromLocale } from './config/i18n';
 
-/**
- * Dynamically load all translation files
- *
- * Uses Vite's import.meta.glob to load all JSON files in locales directory.
- * This eliminates the need for static imports and automatically includes
- * any new language files added to the locales folder.
- */
+// Load every locale JSON via Vite glob so new languages are picked up automatically
 const localeModules = import.meta.glob('./locales/*.json', { eager: true });
 
-/**
- * Build resources object from dynamically loaded locale files
- *
- * Extracts the language code from the filename (e.g., './locales/en.json' -> 'en')
- * and creates the i18next-compatible resources structure.
- */
+// Build the i18next resources map keyed by language code
 const resources = Object.entries(localeModules).reduce((acc, [path, module]) => {
   // Extract language code from path: './locales/en.json' -> 'en'
   const langCode = path.match(/\.\/locales\/(.+)\.json$/)?.[1];
@@ -70,10 +59,7 @@ export async function initI18n(): Promise<void> {
     });
 }
 
-/**
- * Change the current language and persist to storage
- * @param lang - Language code to change to (e.g., 'en', 'it', 'auto')
- */
+/** Change the active language (e.g. 'en', 'it', 'auto') and persist it */
 export async function changeLanguage(lang: string): Promise<void> {
   const store = await load('settings.json', { autoSave: true, defaults: {} });
 

@@ -63,12 +63,7 @@ export function getKernelType(branch: string): string | null {
   return null;
 }
 
-/**
- * Adjust hex color brightness for gradient effects
- * @param hex - Hex color (e.g., "#ef4444")
- * @param percent - Brightness adjustment (-100 to 100, negative darkens, positive lightens)
- * @returns Adjusted hex color
- */
+/** Adjust a hex color's brightness by `percent` (-100 darkens to +100 lightens) */
 export function adjustBrightness(hex: string, percent: number): string {
   // Remove hash if present
   const color = hex.replace('#', '');

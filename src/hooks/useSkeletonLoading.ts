@@ -1,15 +1,8 @@
 import { useState, useEffect } from 'react';
 
 /**
- * Shared hook for skeleton loading with minimum visibility delay
- *
- * Shows skeleton immediately when loading starts, then hides it
- * after data is ready with a minimum display duration to prevent flickering.
- *
- * @param loading - Whether data is currently being fetched
- * @param isReady - Whether the data is ready to display (may differ from !loading)
- * @param minDuration - Minimum skeleton display time in ms (default 300)
- * @returns Object with showSkeleton boolean
+ * Skeleton loading with a minimum visibility window to avoid flicker.
+ * Shows immediately on load, hides only after data is ready and `minDuration` (default 300ms) elapses.
  */
 export function useSkeletonLoading(
   loading: boolean,

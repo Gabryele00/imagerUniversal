@@ -207,10 +207,7 @@ fn open_url_windows(url: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// Check if the application can reach the Armbian API
-///
-/// Performs a GET request to the API health endpoint with a 5-second timeout.
-/// Returns true if reachable, false if offline or any error occurs.
+/// Check reachability of the Armbian API health endpoint (5s timeout)
 #[tauri::command]
 pub async fn check_connectivity() -> bool {
     match CONNECTIVITY_CLIENT
@@ -239,26 +236,14 @@ pub async fn check_connectivity() -> bool {
 // Armbian System Detection
 // ============================================================================
 
-/// Armbian system information from /etc/armbian-release
-///
-/// Contains essential information about the currently running Armbian system.
-/// This file is present on all Armbian installations and provides
-/// board identification information.
+/// Board identification read from /etc/armbian-release
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArmbianReleaseInfo {
     pub board: String,
     pub board_name: String,
 }
 
-/// Read and parse /etc/armbian-release file
-///
-/// This function is Linux-specific and only available on Armbian systems.
-/// Returns None if:
-/// - Not running on Linux
-/// - /etc/armbian-release doesn't exist
-/// - File cannot be read or parsed
-///
-/// Returns ArmbianReleaseInfo if running on an Armbian system.
+/// Parse /etc/armbian-release (Linux only); None when absent or unreadable
 #[tauri::command]
 pub fn get_armbian_release() -> Option<ArmbianReleaseInfo> {
     #[cfg(target_os = "linux")]

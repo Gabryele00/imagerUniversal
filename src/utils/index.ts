@@ -1,19 +1,11 @@
-/**
- * Shared utility functions and constants
- */
+// Shared utility functions and constants
 
 import { COLORS } from '../config';
 
 /** Default color for icons without specific branding */
 export const DEFAULT_COLOR = COLORS.DEFAULT_ICON;
 
-/**
- * Format file size in human-readable format
- * @param bytes - Size in bytes
- * @param unknownText - Text to show when size is 0 or unknown
- * @param precision - Whether to show precise values for small sizes (default: false)
- * @returns Formatted size string (e.g., "1.5 GB", "256 MB")
- */
+/** Format a byte size as human-readable text (e.g. "1.5 GB"); `unknownText` covers 0/unknown */
 export function formatFileSize(
   bytes: number,
   unknownText: string = 'Unknown',
@@ -33,12 +25,7 @@ export function formatFileSize(
   return `${mb.toFixed(0)} MB`;
 }
 
-/**
- * Format bytes to human-readable string
- *
- * @param bytes - Size in bytes
- * @returns Formatted string (e.g., "2.3 GB", "512 MB")
- */
+/** Format bytes as a human-readable string (e.g. "2.3 GB") */
 export function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
   const k = 1024;
@@ -47,11 +34,7 @@ export function formatBytes(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-/**
- * Preload an image and return whether it loaded successfully
- * @param url - Image URL to preload
- * @returns Promise that resolves to true if loaded, false if failed
- */
+/** Preload an image, resolving true if it loaded and false on error */
 export function preloadImage(url: string): Promise<boolean> {
   return new Promise((resolve) => {
     const img = new Image();
@@ -78,18 +61,12 @@ export interface ArmbianFilenameInfo {
 }
 
 /**
- * Parse an Armbian image filename into structured metadata
+ * Parse an Armbian image filename into structured metadata.
  *
- * Handles multiple naming conventions:
- * - Standard: `Armbian_{version}_{board}_{distro}_{branch}_{kernel}[_{desktop}].img[.ext]`
- * - Labeled: `Armbian_{label}_{version}_{board}_{distro}_{branch}_{kernel}[_{desktop}].img[.ext]`
- * - Prefixed: `Armbian-unofficial_{version}_{board}_...` (parts[0] starts with "armbian")
- *
- * If parts[1] does not start with a digit, it is treated as a label
- * and all subsequent field indices are shifted by 1.
- *
- * @param filename - The image filename (with or without path)
- * @returns Parsed info or null if not a valid Armbian filename
+ * Handles three naming conventions:
+ * - Standard:  `Armbian_{version}_{board}_{distro}_{branch}_{kernel}[_{desktop}]`
+ * - Labeled:   `Armbian_{label}_{version}_{board}_...` (label when parts[1] is non-numeric)
+ * - Prefixed:  `Armbian-unofficial_{version}_{board}_...`
  */
 export function parseArmbianFilename(filename: string): ArmbianFilenameInfo | null {
   // Strip path if present
@@ -132,12 +109,7 @@ export function parseArmbianFilename(filename: string): ArmbianFilenameInfo | nu
   };
 }
 
-/**
- * Extract error message from unknown error type
- * @param error - Unknown error (Error, string, or other)
- * @param fallback - Fallback message if extraction fails
- * @returns Error message string
- */
+/** Extract a message from an unknown error value, using `fallback` if none found */
 export function getErrorMessage(error: unknown, fallback: string = 'An error occurred'): string {
   if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;

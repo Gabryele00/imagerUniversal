@@ -66,7 +66,7 @@ pub fn decompress_with_rust_xz(
     }
 }
 
-/// Decompress gzip files using flate2 (single-threaded - TODO: add pigz system tool support)
+/// Decompress gzip files using flate2 (single-threaded)
 pub fn decompress_with_gz(
     input_path: &Path,
     output_path: &Path,
@@ -79,7 +79,7 @@ pub fn decompress_with_gz(
     decompress_with_reader_mt(decoder, output_path, state, "gz")
 }
 
-/// Decompress bzip2 files using bzip2 (single-threaded - TODO: add parallel support)
+/// Decompress bzip2 files (single-threaded)
 pub fn decompress_with_bz2(
     input_path: &Path,
     output_path: &Path,
@@ -92,7 +92,7 @@ pub fn decompress_with_bz2(
     decompress_with_reader_mt(decoder, output_path, state, "bz2")
 }
 
-/// Decompress zstd files (single-threaded - zstd doesn't have good multithreaded Rust support yet)
+/// Decompress zstd files (single-threaded)
 pub fn decompress_with_zstd(
     input_path: &Path,
     output_path: &Path,
@@ -120,8 +120,7 @@ fn decompress_with_reader_mt<R: Read>(
         BufWriter::with_capacity(config::download::DECOMPRESS_BUFFER_SIZE, output_file);
     let mut buffer = vec![0u8; config::download::CHUNK_SIZE];
 
-    // Progress tracking - we don't know the decompressed size (0), so track output bytes
-    // Use config interval for consistent logging
+    // Decompressed size is unknown, so track output bytes with total 0
     let operation_name = format!("Decompress ({})", format_name);
     let mut tracker = ProgressTracker::new(
         &operation_name,
