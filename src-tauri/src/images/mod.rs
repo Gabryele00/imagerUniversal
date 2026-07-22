@@ -1,8 +1,8 @@
 //! Fetching board, image, and vendor data from the Armbian REST API, with
 //! on-disk caching of responses for offline use.
-
 mod filters;
 mod models;
+mod rpi_source;
 
 pub use filters::{map_board, map_images};
 pub use models::{ApiBoardSummary, ApiImage, ApiQdl, ApiVendor, BoardInfo, ImageInfo};
@@ -139,8 +139,16 @@ pub async fn fetch_boards() -> Result<Vec<ApiBoardSummary>, String> {
         config::urls::api_base()
     );
 
-    match fetch_boards_from_api().await {
-        Ok(boards) => {
+     match fetch_boards_from_api().await {
+        Ok(mut boards) => {
+            // Merge in the synthetic Raspberry Pi boards. A failure here must
+            // never break the real Armbian catalog, so it's logged and
+            // swallowed rather than propagated with `?`.
+            match rpi_source::fetch_rpi_boards(&API_CLIENT).await {
+                Ok(rpi_boards) => boards.extend(rpi_boards),
+                Err(e) => log_warn!("images", "RPi catalog merge failed (non-fatal): {}", e),
+            }
+
             if let Ok(json) = serde_json::to_string(&boards) {
                 save_cache("api-boards", &json);
             }
@@ -239,7 +247,32 @@ pub async fn fetch_images_for_board(
     branch: Option<&str>,
     promoted: Option<bool>,
 ) -> Result<Vec<ApiImage>, String> {
-    log_debug!("images", "Fetching images for board: {} from API", slug);
+   log_debug!("images", "Fetching images for board: {} from API", slug);
+
+    // Raspberry Pi boards are synthetic (not in the Armbian REST API) -
+    // route them to the RPi catalog adapter instead of api.armbian.com.
+    if rpi_source::is_rpi_board_slug(slug) {
+        let cache_name = format!("api-images-{}", slug);
+        return match rpi_source::fetch_rpi_images_for_board(&API_CLIENT, slug).await {
+            Ok(images) => {
+                if let Ok(json) = serde_json::to_string(&images) {
+                    save_cache(&cache_name, &json);
+                }
+                Ok(images)
+            }
+            Err(e) => {
+                log_warn!(
+                    "images",
+                    "RPi image fetch for board {} failed, trying cache: {}",
+                    slug,
+                    e
+                );
+                let data = load_cache(&cache_name).await?;
+                serde_json::from_str(&data)
+                    .map_err(|e| format!("Failed to parse cached RPi images: {}", e))
+            }
+        };
+    }
 
     let cache_name = format!("api-images-{}", slug);
 
@@ -321,11 +354,14 @@ pub async fn fetch_vendors() -> Result<Vec<ApiVendor>, String> {
     );
 
     match fetch_vendors_from_api().await {
-        Ok(vendors) => {
+        Ok(mut vendors) => {
+            vendors.push(rpi_source::rpi_vendor());
+
             if let Ok(json) = serde_json::to_string(&vendors) {
                 save_cache("api-vendors", &json);
             }
             Ok(vendors)
+        
         }
         Err(e) => {
             log_warn!("images", "Vendors API fetch failed, trying cache: {}", e);
